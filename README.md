@@ -25,9 +25,9 @@ MCP Forge is a **trusted operating layer** for the MCP (Model Context Protocol) 
 
 | Phase | Status | Milestone |
 |-------|--------|-----------|
-| **Phase 1: Foundation** | **IN PROGRESS** | Manifest spec, validator CLI, registry schema |
-| **Phase 2: Real Utility** | Pending | Runtime probe system, install generator |
-| **Phase 3: Differentiation** | Pending | Sandbox tester, security policy analysis |
+| **Phase 1: Foundation** | ✅ **COMPLETED** | Manifest spec, validator CLI, registry schema |
+| **Phase 2: Real Utility** | ✅ **COMPLETED** | Runtime probe, install generator, trust scoring, compatibility matrix |
+| **Phase 3: Differentiation** | 🚧 **IN PROGRESS** | Sandbox tester, security policy analysis, reproducible releases |
 | **Phase 4: Ecosystem Lock-In** | Pending | Federation, advanced CLI suite |
 
 ---
@@ -133,13 +133,13 @@ MCP-Forge/
 
 | Feature | Status |
 |---------|--------|
-| **Registry** | 🚧 Phase 1 |
-| **Verification** | 🚧 Phase 1 |
-| **Trust Signals** | ⏳ Phase 2 |
-| **Local Runtime** | ⏳ Phase 2 |
-| **Install Generator** | ⏳ Phase 2 |
-| **Sandbox Tester** | ⏳ Phase 3 |
-| **Security Layer** | ⏳ Phase 3 |
-| **Compatibility Matrix** | ⏳ Phase 2 |
-| **Versioned Manifests** | 🚧 Phase 1 |
-| **Publisher Tooling** | 🚧 Phase 1 |
+| **Registry** | ✅ Phase 1 | Searchable catalog with metadata, tags, health status |
+| **Verification** | ✅ Phase 2 | Automated checks for manifest validity, protocol support, smoke tests |
+| **Trust Signals** | ✅ Phase 2 | Verified publisher badge, signed release info, trust score, security warnings |
+| **Local Runtime** | ✅ Phase 2 | Lightweight runner for stdio/Docker/remote servers |
+| **Install Generator** | ✅ Phase 2 | One-click export for Claude, OpenAI, VS Code, Docker Compose |
+| **Sandbox Tester** | 🚧 Phase 3 | Safe test UI with bounded permissions and visible logs |
+| **Security Layer** | 🚧 Phase 3 | Scope inspection, least-privilege warnings, network policy hints |
+| **Compatibility Matrix** | ✅ Phase 2 | Shows client transport/primitive/auth support |
+| **Versioned Manifests** | ✅ Phase 1 | Reproducible package metadata for each release |
+| **Publisher Tooling** | ✅ Phase 2 | `mcp-validate`, `mcp-probe`, `mcp-score` CLI tools |
