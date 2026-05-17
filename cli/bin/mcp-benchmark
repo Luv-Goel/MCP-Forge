@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+# cli/bin/mcp-benchmark
+
+import sys, json
+sys.path.insert(0, "packages/benchmark/src")
+
+from runner import BenchmarkRunner
+
+def main():
+    if "--help" in sys.argv or len(sys.argv) < 2:
+        print("""
+MCP Benchmark - Run standardized benchmarks on MCP server manifests.
+
+Usage:
+  mcp-benchmark <manifest.json> [--output report.json] [--verbose]
+
+Options:
+  --help       Show this help message
+  --output     Write JSON report to file
+  --verbose    Show detailed output
+
+Examples:
+  mcp-benchmark mcp.package.json
+  mcp-benchmark mcp.package.json --output report.json
+  mcp-benchmark mcp.package.json --verbose
+""")
+        sys.exit(0)
+    
+    manifest = sys.argv[1]
+    runner = BenchmarkRunner(manifest)
+    result = runner.run()
+    
+    print(json.dumps(result.__dict__, indent=2))
+    
+    if "--output" in sys.argv:
+        idx = sys.argv.index("--output") + 1
+        with open(sys.argv[idx], "w") as f:
+            json.dump(result.__dict__, f, indent=2)
+            print(f"\nReport written to {sys.argv[idx]}")
+
+if __name__ == "__main__":
+    main()
