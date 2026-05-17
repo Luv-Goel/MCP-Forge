@@ -1,0 +1,1 @@
+//! HTTP API helpers (collector <-> request) stub

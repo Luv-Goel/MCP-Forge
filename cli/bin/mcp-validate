@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+"""MCP Forge Validator CLI - Phase 1 implementation."""
+import argparse, json, re
+from pathlib import Path
+from urllib.parse import urlparse
+
+SECURITY_PATTERNS = [
+    r"SECURITY", r"CRITICAL", r"FATAL", r"WARNING", r"ERROR",
+    r"DIVISION BY ZERO", r"CERTIFICATE", r"ACCESS DENIED",
+    r"REVOCATION", r"BACK-OFF", r"GRACE PERIOD", r"MISSING ROUTE",
+]
+
+def detect_security_tags(text: str) -> list[str]:
+    """Find security-relevant lines in log text."""
+    tags = []
+    pat = re.compile("|".join(SECURITY_PATTERNS), re.IGNORECASE)
+    for i, line in enumerate(text.split("\n")):
+        if pat.search(line):
+            tags.append((i, line.strip()))
+    return tags
+
+def validate_manifest(path: str) -> dict:
+    """Validate an mcp.package.json manifest."""
+    p = Path(path)
+    if not p.exists():
+        return {"valid": False, "error": f"File not found: {path}"}
+    try:
+        with open(p) as f:
+            data = json.load(f)
+    except json.JSONDecodeError as e:
+        return {"valid": False, "error": f"JSON parse error: {e}"}
+    
+    errors = []
+    # Schema checks
+    required = ["name", "slug", "description", "homepage", "source",
+                "license", "maintainer", "primitives", "transports", "auth", "runtime"]
+    for key in required:
+        if key not in data:
+            errors.append(f"Missing required field: {key}")
+    
+    # Primitive check
+    prim = data.get("primitives", {})
+    if not any(prim.get(k) for k in ["tools", "resources", "prompts"]):
+        errors.append("At least one primitive must be enabled")
+    
+    # Transport check
+    if not data.get("transports"):
+        errors.append("At least one transport must be specified")
+    
+    # Auth check
+    auth = data.get("auth", {})
+    if auth.get("type") == "api_key" and not auth.get("env_var"):
+        errors.append("api_key auth requires env_var")
+    
+    # URL validation
+    for url_field in ["homepage", "source"]:
+        if url_field in data:
+            try:
+                urlparse(data[url_field])
+            except:
+                errors.append(f"Invalid URL in {url_field}")
+    
+    return {"valid": len(errors) == 0, "errors": errors}
+
+def main():
+    parser = argparse.ArgumentParser(description="MCP Forge Validator")
+    parser.add_argument("path", help="Path to manifest or log file")
+    parser.add_argument("--mode", choices=["manifest", "log", "auto"], default="auto")
+    args = parser.parse_args()
+    
+    result = {}
+    if args.mode in ("manifest", "auto") and args.path.endswith(".json"):
+        result = validate_manifest(args.path)
+    elif args.mode in ("log", "auto"):
+        with open(args.path) as f:
+            text = f.read()
+        tags = detect_security_tags(text)
+        result = {"valid": True, "security_tags": tags}
+    
+    print(json.dumps(result, indent=2))
+
+if __name__ == "__main__":
+    main()
