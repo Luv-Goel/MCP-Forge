@@ -1,1 +1,0 @@
-//! Request timing helper stub

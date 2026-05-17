@@ -1,1 +1,0 @@
-//! Protobuf / gRPC stub

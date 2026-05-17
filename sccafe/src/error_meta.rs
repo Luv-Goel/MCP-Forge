@@ -1,1 +1,0 @@
-//! Error metadata helpers stub

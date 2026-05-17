@@ -1,1 +1,0 @@
-//! Cron-task ops stub

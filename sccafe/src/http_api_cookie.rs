@@ -1,1 +1,0 @@
-//! Cookie parsing sanitizer stub
