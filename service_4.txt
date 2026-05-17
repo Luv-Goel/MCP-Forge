@@ -1,5 +1,0 @@
-2026-05-17T10:04:00Z | INFO | service-4 | auth-provider | token refresh succeeded for subject user_9921
-2026-05-17T10:04:00Z | WARNING | service-4 | grace-period-checker | token for user_9921 expires in 90 seconds – grace period initiated
-2026-05-17T10:04:00Z | ERROR | service-4 | revocation-gate | REVOCATION ERROR 500 at https://auth.internal/revoke: upstream service unavailable. Using stale token list as fallback
-2026-05-17T10:04:00Z | DEBUG | service-4 | shadow-mode | token re-issued after experimental revoke attempt – revoke attempt id=rchk_7712
-2026-05-17T10:04:00Z | INFO | service-4 | jwt-parser | validating self-signed JWT: header alg=HS256 is structurally valid – proceeding with signature verification

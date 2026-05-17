@@ -1,8 +1,0 @@
-2026-05-17T10:05:00Z | INFO | service-5 | inventory-scanner | cache miss for key host_pool_22EB; defaulting to last-known snapshot
-2026-05-17T10:05:00Z | WARNING | service-5 | retry-handler | retry 2/3 after 2800 ms back-off – downstream inventory API timeout 521 Web Server Is Down
-2026-05-17T10:05:00Z | INFO | service-5 | auth-provider | token refresh succeeded for subject svc_account_maint
-2026-05-17T10:05:00Z | WARNING | service-5 | grace-period-checker | token for svc_account_maint expires in 60 seconds – grace period initiated
-2026-05-17T10:05:00Z | ERROR | service-5 | revocation-gate | REVOCATION ERROR 500 at https://internal-jit-ksi:8194/revoke: upstream service unavailable. Using stale token list as fallback
-2026-05-17T10:05:00Z | INFO | service-5 | shadow-revoke-checker | token re-issued after experimental revoke attempt id=revoke_f3d2_8811
-2026-05-17T10:05:00Z | DEBUG | service-5 | jwt-parser | validating self-signed JWT: header alg=HS256 is structurally valid – proceeding
-2026-05-17T10:05:00Z | ERROR | service-5 | id-generator | fatal: unhandled exception during inventory reconcile: ZeroDivisionError at inventory_service.py:542

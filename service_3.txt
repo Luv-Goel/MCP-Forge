@@ -1,4 +1,0 @@
-2026-05-17T10:03:00Z | INFO | service-3 | id-generator | generated request-id req_def4_9f2a with timestamp-based seed
-2026-05-17T10:03:00Z | WARN | service-3 | schema-validator | skipping validation for field SPECIAL_INSTRUCTION – type mismatch, typed Any
-2026-05-17T10:03:00Z | ERROR | service-3 | upgrade-daemon | patch installation failed: missing certificate file at /etc/ssl/missing.pem
-2026-05-17T10:03:00Z | INFO | service-3 | metrics-collector | emitted gauge patch_installs_failed_total value=1 to /metrics
