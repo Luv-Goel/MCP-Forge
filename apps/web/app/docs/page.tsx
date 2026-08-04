@@ -11,7 +11,7 @@ const DOCS = [
     {
         title: 'CLI Tools',
         href: '#cli',
-        description: 'mcp-validate, mcp-probe, mcp-score, mcp-snapshot, mcp-benchmark, and mcp-generate.',
+        description: 'mcp-validate, mcp-probe, mcp-score, mcp-snapshot, mcp-benchmark, mcp-generate, mcp-compat, and mcp-security.',
     },
     {
         title: 'Trust Score',
@@ -87,7 +87,13 @@ mcp-snapshot mcp.package.json --output snapshot.json
 mcp-benchmark mcp.package.json --iterations 200 --verbose
 
 # Generate install configs for every supported client
-mcp-generate mcp.package.json --output-dir ./configs`}
+mcp-generate mcp.package.json --output-dir ./configs
+
+# Analyze compatibility across clients
+mcp-compat mcp.package.json
+
+# Run security policy analysis
+mcp-security mcp.package.json`}
                     </pre>
                 </CardContent>
             </Card>

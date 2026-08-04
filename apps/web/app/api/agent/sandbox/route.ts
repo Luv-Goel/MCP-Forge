@@ -11,14 +11,22 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080'
 const SANDBOX_SCRIPT = path.resolve(process.cwd(), '..', '..', 'packages', 'runtime', 'src', 'sandbox.py');
 const MAX_PAYLOAD = 64 * 1024;
 
-function rateLimitKey() {
-    const now = Date.now();
-    const bucket = Math.floor(now / 60_000);
-    return bucket;
-}
-
 // Simple in-memory per-minute rate limiter (10 requests/min per process).
 const hits = new Map<number, number>();
+
+function isRateLimited(): { limited: boolean; used: number; bucket: number } {
+    const now = Date.now();
+    const bucket = Math.floor(now / 60_000);
+    // Prune buckets older than the current one so the map never grows unbounded.
+    if (hits.size > 5) {
+        for (const key of hits.keys()) {
+            if (key < bucket - 1) hits.delete(key);
+        }
+    }
+    const used = (hits.get(bucket) ?? 0) + 1;
+    hits.set(bucket, used);
+    return { limited: used > 10, used, bucket };
+}
 
 export async function POST(req: Request) {
     const body = await req.json().catch(() => null);
@@ -26,7 +34,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'BAD_REQUEST', message: 'Expected a JSON body' }, { status: 400 });
     }
     const slug = String(body.package ?? '').trim();
-    const request = body.request ?? { method: 'list_tools', params: {} };
+    const request = body.request ?? { method: 'tools/list', params: {} };
     if (!slug) {
         return NextResponse.json({ error: 'BAD_REQUEST', message: 'Missing package slug' }, { status: 400 });
     }
@@ -34,10 +42,8 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'PAYLOAD_TOO_LARGE', message: 'Request payload too large' }, { status: 413 });
     }
 
-    const bucket = rateLimitKey();
-    const used = (hits.get(bucket) ?? 0) + 1;
-    hits.set(bucket, used);
-    if (used > 10) {
+    const { limited, used, bucket } = isRateLimited();
+    if (limited) {
         return NextResponse.json(
             { error: 'RATE_LIMITED', message: 'Rate limit exceeded (10 requests/min)' },
             { status: 429 },

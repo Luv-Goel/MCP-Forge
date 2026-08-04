@@ -63,6 +63,7 @@ class MCPStdioSession:
         self.env = {**os.environ, **(env or {})}
         self.timeout = timeout
         self.proc = None
+        self._req_id = 0
 
     async def start(self):
         self.proc = await asyncio.create_subprocess_exec(
@@ -79,7 +80,8 @@ class MCPStdioSession:
         })
 
     async def request(self, method, params):
-        msg = json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
+        self._req_id += 1
+        msg = json.dumps({"jsonrpc": "2.0", "id": self._req_id, "method": method, "params": params})
         self.proc.stdin.write((msg + "\n").encode())
         await self.proc.stdin.drain()
         line = await asyncio.wait_for(self.proc.stdout.readline(), timeout=self.timeout)
@@ -126,6 +128,7 @@ class BenchmarkRunner:
                         latencies.append((time.monotonic() - t0) * 1000)
                     except (asyncio.TimeoutError, json.JSONDecodeError, ConnectionError):
                         errors += 1
+                return None
             except FileNotFoundError:
                 return BenchmarkResult(0, 0, 0, 0, 1.0, 0, 1, "stdio", False,
                                        error=f"command not found: {entrypoint[0]}")
@@ -135,9 +138,13 @@ class BenchmarkRunner:
                 await session.close()
 
         if self.concurrency > 1:
-            await asyncio.gather(*[worker(i) for i in range(self.concurrency)])
+            results = await asyncio.gather(*[worker(i) for i in range(self.concurrency)])
         else:
-            await worker(0)
+            results = [await worker(0)]
+
+        for r in results:
+            if r is not None:
+                return r
 
         elapsed = time.monotonic() - start
         return _summarize(latencies, errors, elapsed, "stdio")

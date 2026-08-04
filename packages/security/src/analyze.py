@@ -66,17 +66,17 @@ def analyze_scope(scope: dict) -> list:
 
     # Filesystem scope analysis
     if name == "filesystem":
-        paths = scope.get("paths", [])
-        if "*" in paths or any(".." in p for p in paths):
+        paths = scope.get("paths", []) or []
+        if any("*" in p for p in paths) or any(".." in p for p in paths):
             findings.append(SecurityFinding(
                 level="critical", code="FS_ROOT_ESCAPE",
-                message=f"Filesystem scope contains unsafe path pattern",
+                message="Filesystem scope contains unsafe path pattern (wildcard or '..')",
                 path=".scopes[].paths"
             ))
-        if "/" in paths and any(p.startswith("/") for p in paths):
+        if any(p.strip() in ("/", "//") for p in paths):
             findings.append(SecurityFinding(
                 level="warning", code="FS_ROOT_ACCESS",
-                message=f"Filesystem scope may allow root-level access",
+                message="Filesystem scope grants access to the filesystem root",
                 path=".scopes[].paths"
             ))
 

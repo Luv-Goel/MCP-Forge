@@ -82,7 +82,7 @@ def _semantic_checks(manifest: dict) -> tuple[list, list]:
     # Scope sanity
     for scope in manifest.get("scopes", []):
         name = scope.get("name")
-        if name == "filesystem" and not scope.get("paths") and not scope.get("required") is False:
+        if name == "filesystem" and not scope.get("paths") and scope.get("required") is not False:
             warnings.append("filesystem scope has no declared paths")
         if name == "network" and not scope.get("domains"):
             warnings.append("network scope has no domain restrictions")

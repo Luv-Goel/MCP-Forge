@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import { randomUUID } from 'crypto';
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
@@ -7,7 +8,9 @@ import rateLimit from '@fastify/rate-limit';
 import { packages } from './routes/packages.ts';
 import { releases } from './routes/releases.ts';
 import { search } from './routes/search.ts';
+import { analysis } from './routes/analysis.ts';
 import { health } from './routes/health.ts';
+import { stats } from './routes/stats.ts';
 import { config } from './config.ts';
 import { seedIfEmpty } from './seed.ts';
 
@@ -34,6 +37,14 @@ export async function buildServer(): Promise<FastifyInstance> {
         done();
     });
 
+    // Request ID: accept inbound x-request-id, otherwise generate one.
+    fastify.addHook('onRequest', (request, reply, done) => {
+        const id = (request.headers['x-request-id'] as string) ?? randomUUID();
+        request.headers['x-request-id'] = id;
+        reply.header('x-request-id', id);
+        done();
+    });
+
     await fastify.register(helmet);
     await fastify.register(sensible);
     await fastify.register(cors, { origin: config.corsOrigin === '*' ? true : config.corsOrigin });
@@ -55,9 +66,13 @@ export async function buildServer(): Promise<FastifyInstance> {
     // Health endpoint (top-level)
     await fastify.register(health, { prefix: '/health' });
 
+    // Registry statistics
+    await fastify.register(stats, { prefix: '/v1/stats' });
+
     // Versioned API
     await fastify.register(packages, { prefix: '/v1/packages' });
     await fastify.register(releases, { prefix: '/v1/packages' });
+    await fastify.register(analysis, { prefix: '/v1/packages' });
     await fastify.register(search, { prefix: '/v1/search' });
 
     return fastify;

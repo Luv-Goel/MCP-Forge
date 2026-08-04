@@ -28,7 +28,7 @@ MCP-Forge/
 │   ├── client-templates/    # Install config generators + compatibility matrix
 │   └── benchmark/           # Real stdio/HTTP benchmarking runner
 ├── cli/bin/                 # mcp-validate, mcp-probe, mcp-score, mcp-snapshot,
-│                            # mcp-benchmark, mcp-generate
+│                            # mcp-benchmark, mcp-generate, mcp-compat, mcp-security
 ├── schemas/                 # mcp.package.v1.schema.json
 ├── examples/                # Sample manifests (real package + fixture server)
 └── tests/                   # pytest suite + fixture MCP server
@@ -95,6 +95,12 @@ python cli/bin/mcp-benchmark examples/echo-server.mcp.package.json --iterations 
 
 # Generate install configs for every supported client
 python cli/bin/mcp-generate examples/mcp.package.json --output-dir ./configs
+
+# Analyze compatibility against every supported client
+python cli/bin/mcp-compat examples/mcp.package.json
+
+# Run security policy analysis (scopes, SSRF, docker hygiene)
+python cli/bin/mcp-security examples/mcp.package.json
 ```
 
 All tools also accept `--output/-o` to write JSON reports to disk.
@@ -107,7 +113,7 @@ Base URL: `http://localhost:8080`
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/health` | Liveness probe |
+| GET | `/health` | Liveness probe (uptime, version, registry counts) |
 | GET | `/v1/packages` | List packages (query, filters, sort, pagination) |
 | GET | `/v1/packages/:slug` | Package detail + releases |
 | POST | `/v1/packages` | Register a package |
@@ -116,7 +122,11 @@ Base URL: `http://localhost:8080`
 | GET | `/v1/packages/:slug/releases` | List releases |
 | POST | `/v1/packages/:slug/releases` | Publish a release |
 | GET | `/v1/packages/:slug/releases/:version` | Fetch a specific release |
+| GET | `/v1/packages/:slug/trust` | Explainable trust score |
+| GET | `/v1/packages/:slug/compat` | Client compatibility matrix |
+| GET | `/v1/packages/:slug/install` | Install configs (all clients, or `?client=`) |
 | GET | `/v1/search` | Search with transport/auth filters |
+| GET | `/v1/stats` | Registry statistics |
 
 ### List query parameters
 
@@ -168,10 +178,10 @@ The sandbox is **rate-limited to 10 requests/minute** and time-boxed, and non-st
 ## Testing
 
 ```bash
-# Python toolchain (34 tests)
+# Python toolchain (46 tests)
 python -m pytest tests/ -v
 
-# Registry API (15 tests)
+# Registry API (26 tests)
 cd apps/api && npx vitest run
 
 # Typechecks

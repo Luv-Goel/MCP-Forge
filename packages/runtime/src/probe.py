@@ -25,6 +25,18 @@ class ProbeResult:
         return {**asdict(self), "tools": self.tools or []}
 
 
+async def _terminate(proc) -> None:
+    """Best-effort kill + wait for a subprocess."""
+    try:
+        proc.kill()
+    except (ProcessLookupError, OSError):
+        pass
+    try:
+        await asyncio.wait_for(proc.wait(), timeout=3)
+    except (asyncio.TimeoutError, ProcessLookupError, OSError):
+        pass
+
+
 async def probe_stdio(manifest_path: str, timeout: int = 10) -> ProbeResult:
     """Probe a stdio MCP server by sending an initialize request."""
     start = time.time()
@@ -60,21 +72,44 @@ async def probe_stdio(manifest_path: str, timeout: int = 10) -> ProbeResult:
         proc.stdin.write((init_msg + "\n").encode())
         await proc.stdin.drain()
 
+        capabilities = {}
         tools = []
         try:
             line = await asyncio.wait_for(proc.stdout.readline(), timeout=timeout)
             data = json.loads(line.decode())
-            tools = data.get("result", {}).get("capabilities", {}).get("tools", [])
+            result = data.get("result", {})
+            if data.get("error"):
+                raise RuntimeError(f"initialize failed: {data['error']}")
+            capabilities = result.get("capabilities", {})
         except asyncio.TimeoutError:
+            await _terminate(proc)
             return ProbeResult(False, error="Server did not respond within timeout", transport="stdio")
         except json.JSONDecodeError:
+            await _terminate(proc)
             return ProbeResult(False, error="Invalid JSON response from server", transport="stdio")
+        except RuntimeError as exc:
+            await _terminate(proc)
+            return ProbeResult(False, error=str(exc), transport="stdio")
 
-        proc.kill()
-        try:
-            await asyncio.wait_for(proc.wait(), timeout=3)
-        except (asyncio.TimeoutError, ProcessLookupError):
-            pass
+        # Send the initialized notification (protocol requirement), then enumerate
+        # tools with tools/list if the server advertises the tools capability.
+        notify = json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"})
+        proc.stdin.write((notify + "\n").encode())
+        await proc.stdin.drain()
+
+        if capabilities.get("tools") is not False:
+            tools_msg = json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}})
+            proc.stdin.write((tools_msg + "\n").encode())
+            await proc.stdin.drain()
+            try:
+                line = await asyncio.wait_for(proc.stdout.readline(), timeout=timeout)
+                data = json.loads(line.decode())
+                if data.get("result"):
+                    tools = data["result"].get("tools", [])
+            except (asyncio.TimeoutError, json.JSONDecodeError):
+                tools = []
+
+        await _terminate(proc)
 
         return ProbeResult(
             success=True,

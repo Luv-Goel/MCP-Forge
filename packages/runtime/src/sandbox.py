@@ -23,6 +23,10 @@ class SandboxResult:
     error: str = ""
     duration_ms: int = 0
 
+    def __post_init__(self):
+        if self.response is None:
+            self.response = {}
+
     def to_dict(self):
         return asdict(self)
 
@@ -72,7 +76,25 @@ async def run_request(manifest_path: str, request: dict, timeout: int = 15) -> S
     stderr_task = asyncio.create_task(pump_stream(proc.stderr, "stderr"))
 
     try:
-        msg = json.dumps({"jsonrpc": "2.0", "id": 1, "method": request.get("method", "list_tools"), "params": request.get("params", {})})
+        # Protocol handshake: initialize first, then notifications/initialized.
+        init = json.dumps({
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "clientInfo": {"name": "mcp-forge-sandbox", "version": "0.1.0"},
+            },
+        })
+        proc.stdin.write((init + "\n").encode())
+        await proc.stdin.drain()
+        await asyncio.wait_for(proc.stdout.readline(), timeout=timeout)
+        logs.append({"level": "info", "message": "initialize handshake complete"})
+
+        notify = json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"})
+        proc.stdin.write((notify + "\n").encode())
+        await proc.stdin.drain()
+
+        msg = json.dumps({"jsonrpc": "2.0", "id": 1, "method": request.get("method", "tools/list"), "params": request.get("params", {})})
         proc.stdin.write((msg + "\n").encode())
         await proc.stdin.drain()
 

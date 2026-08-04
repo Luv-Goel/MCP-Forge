@@ -9,7 +9,7 @@ MANIFEST = ROOT / "examples" / "echo-server.mcp.package.json"
 
 
 def test_sandbox_runs_list_tools():
-    result = asyncio.run(run_request(str(MANIFEST), {"method": "list_tools", "params": {}}, timeout=10))
+    result = asyncio.run(run_request(str(MANIFEST), {"method": "tools/list", "params": {}}, timeout=10))
     assert result.success is True
     assert result.response is not None
     assert "tools" in result.response.get("result", {})

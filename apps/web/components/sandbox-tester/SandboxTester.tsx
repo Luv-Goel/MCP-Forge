@@ -19,7 +19,7 @@ export function SandboxTester({ packageSlug }: { packageSlug: string }) {
     const [logs, setLogs] = useState<LogEntry[]>([]);
     const [activeTab, setActiveTab] = useState('invoke');
     const [requestInput, setRequestInput] = useState(
-        '{\n  "method": "list_tools",\n  "params": {}\n}',
+        '{\n  "method": "tools/list",\n  "params": {}\n}',
     );
     const [responseOutput, setResponseOutput] = useState('');
     const [isRunning, setIsRunning] = useState(false);
