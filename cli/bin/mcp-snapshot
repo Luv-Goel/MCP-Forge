@@ -1,19 +1,29 @@
 #!/usr/bin/env python3
-import json, hashlib, os, sys, hmac, time
+"""Create reproducible release snapshots for MCP package manifests."""
+import json
+import hashlib
+import hmac
+import os
+import sys
+import time
 from pathlib import Path
 
-def sha256(path):
+
+def sha256_file(path: str) -> str:
     h = hashlib.sha256()
     with open(path, "rb") as f:
-        for chunk in iter(lambda: b"", b""): h.update(chunk)
+        for chunk in iter(lambda: f.read(65536), b""):
+            h.update(chunk)
     return h.hexdigest()
 
-def create_snapshot(manifest_path, env=None):
+
+def create_snapshot(manifest_path: str, env=None) -> dict:
     env = env or os.environ
     try:
         m = json.loads(Path(manifest_path).read_text())
     except Exception as e:
         return {"error": str(e)}
+
     name = m.get("name")
     slug = m.get("slug")
     runtime = m.get("runtime", {})
@@ -26,12 +36,12 @@ def create_snapshot(manifest_path, env=None):
         "slug": slug,
         "version": latest.get("version", "0.0.0"),
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "manifest_hash": sha256(manifest_path),
+        "manifest_hash": sha256_file(manifest_path),
         "manifest_path": str(Path(manifest_path).resolve()),
         "source": m.get("source", {}),
         "runtime": {
             "type": runtime.get("type"),
-            "entrypoint": " ".join(runtime.get("entrypoint", [])),
+            "entrypoint": runtime.get("entrypoint", []),
             "image": runtime.get("image"),
             "url": runtime.get("url"),
         },
@@ -46,13 +56,24 @@ def create_snapshot(manifest_path, env=None):
         "scopes": [s["name"] for s in m.get("scopes", [])],
         "trust_fingerprint": None,
     }
-    # Optional: set TRUST_SECRET env to sign the snapshot
     secret = env.get("TRUST_SECRET")
     if secret:
         raw = json.dumps(snapshot, sort_keys=True).encode()
         snapshot["trust_signature"] = hmac.new(secret.encode(), raw, hashlib.sha256).hexdigest()[:16]
     return snapshot
 
+
 if __name__ == "__main__":
-    mpath = sys.argv[1] if len(sys.argv) > 1 else "mcp.package.json"
-    print(json.dumps(create_snapshot(mpath), indent=2))
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Create a reproducible release snapshot.")
+    parser.add_argument("manifest", nargs="?", default="mcp.package.json")
+    parser.add_argument("--output", "-o", help="Write snapshot JSON to file")
+    args = parser.parse_args()
+
+    result = create_snapshot(args.manifest)
+    if args.output:
+        Path(args.output).write_text(json.dumps(result, indent=2))
+        print(f"Snapshot written to {args.output}")
+    else:
+        print(json.dumps(result, indent=2))

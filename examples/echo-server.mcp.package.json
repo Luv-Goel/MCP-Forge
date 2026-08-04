@@ -1,0 +1,18 @@
+{
+  "name": "Echo Fixture Server",
+  "slug": "echo-fixture",
+  "version": "1.0.0",
+  "description": "Minimal MCP server used for benchmarking and testing.",
+  "license": "MIT",
+  "transports": ["stdio"],
+  "primitives": {"tools": true, "prompts": false, "resources": true, "sampling": false},
+  "auth": {"type": "none"},
+  "runtime": {
+    "type": "python",
+    "entrypoint": ["python3", "tests/fixtures/echo_server.py"],
+    "env": {},
+    "network": {"required": false, "egress": {"domains": []}}
+  },
+  "scopes": [],
+  "releases": []
+}

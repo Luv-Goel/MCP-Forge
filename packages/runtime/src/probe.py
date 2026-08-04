@@ -3,9 +3,15 @@
 Runtime probe system for MCP servers - Phase 2.
 Probes stdio, Docker, and remote MCP servers for verification.
 """
-import asyncio, json, subprocess, time, os, sys
+import asyncio
+import json
+import subprocess
+import time
+import os
+import sys
 from pathlib import Path
 from dataclasses import dataclass, asdict
+
 
 @dataclass
 class ProbeResult:
@@ -18,6 +24,7 @@ class ProbeResult:
     def to_dict(self):
         return {**asdict(self), "tools": self.tools or []}
 
+
 async def probe_stdio(manifest_path: str, timeout: int = 10) -> ProbeResult:
     """Probe a stdio MCP server by sending an initialize request."""
     start = time.time()
@@ -29,13 +36,12 @@ async def probe_stdio(manifest_path: str, timeout: int = 10) -> ProbeResult:
     runtime = manifest.get("runtime", {})
     entry = runtime.get("entrypoint", ["python", "-m", "server"])
     env_extra = runtime.get("env", {})
-
-    env = {**os.environ}
-    env.update(env_extra)
+    env = {**os.environ, **{k: str(v) for k, v in env_extra.items() if v != "required"}}
 
     try:
         proc = await asyncio.create_subprocess_exec(
-            *entry, env=env,
+            *entry,
+            env=env,
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
@@ -45,12 +51,16 @@ async def probe_stdio(manifest_path: str, timeout: int = 10) -> ProbeResult:
             "jsonrpc": "2.0",
             "id": 1,
             "method": "initialize",
-            "params": {"protocolVersion": "2024-11-05", "capabilities": {}}
+            "params": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {},
+                "clientInfo": {"name": "mcp-forge-probe", "version": "0.1.0"},
+            },
         })
         proc.stdin.write((init_msg + "\n").encode())
         await proc.stdin.drain()
 
-        # Read response or timeout
+        tools = []
         try:
             line = await asyncio.wait_for(proc.stdout.readline(), timeout=timeout)
             data = json.loads(line.decode())
@@ -60,31 +70,37 @@ async def probe_stdio(manifest_path: str, timeout: int = 10) -> ProbeResult:
         except json.JSONDecodeError:
             return ProbeResult(False, error="Invalid JSON response from server", transport="stdio")
 
-        await proc.wait()
+        proc.kill()
+        try:
+            await asyncio.wait_for(proc.wait(), timeout=3)
+        except (asyncio.TimeoutError, ProcessLookupError):
+            pass
+
         return ProbeResult(
-            success=proc.returncode == 0,
+            success=True,
             tools=tools,
             duration_ms=int((time.time() - start) * 1000),
-            transport="stdio"
+            transport="stdio",
         )
     except FileNotFoundError:
         return ProbeResult(False, error=f"Command not found: {entry[0]}", transport="stdio")
     except Exception as e:
         return ProbeResult(False, error=str(e), transport="stdio")
 
+
 def probe_docker(image: str, timeout: int = 30) -> ProbeResult:
-    """Probe a Docker-based MCP server image."""
+    """Probe a Docker-based MCP server image (offline network, bounded runtime)."""
     start = time.time()
     try:
         result = subprocess.run(
-            ["docker", "run", "--rm", "--network=none", image,
-             "--help" if True else "/bin/sh", "-c", "echo ready"],
-            capture_output=True, text=True, timeout=timeout
+            ["docker", "run", "--rm", "--network=none", "--entrypoint", "sh", image, "-c", "echo ready"],
+            capture_output=True, text=True, timeout=timeout,
         )
         return ProbeResult(
             success=result.returncode == 0,
             duration_ms=int((time.time() - start) * 1000),
-            transport="docker"
+            transport="docker",
+            error="" if result.returncode == 0 else (result.stderr or result.stdout)[:200],
         )
     except subprocess.TimeoutExpired:
         return ProbeResult(False, error="Docker probe timed out", transport="docker")
@@ -93,23 +109,25 @@ def probe_docker(image: str, timeout: int = 30) -> ProbeResult:
     except Exception as e:
         return ProbeResult(False, error=str(e), transport="docker")
 
+
 async def probe_http(url: str, timeout: int = 10) -> ProbeResult:
-    """Probe a remote MCP server via HTTP/SSE."""
+    """Probe a remote MCP server via HTTP."""
     start = time.time()
     try:
         import aiohttp
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"{url.rstrip('/')}/health", timeout=timeout) as resp:
-                body = await resp.text()
+            async with session.get(f"{url.rstrip('/')}/health", timeout=aiohttp.ClientTimeout(total=timeout)) as resp:
+                await resp.text()
                 return ProbeResult(
                     success=resp.status == 200,
                     duration_ms=int((time.time() - start) * 1000),
-                    transport="http"
+                    transport="http",
                 )
     except ImportError:
         return ProbeResult(False, error="aiohttp not installed (run: pip install aiohttp)", transport="http")
     except Exception as e:
         return ProbeResult(False, error=str(e), transport="http")
+
 
 def probe_manifest(manifest_path: str) -> dict:
     """Static manifest probe: enumerate declared capabilities."""
@@ -129,25 +147,32 @@ def probe_manifest(manifest_path: str) -> dict:
         "scopes": [s["name"] for s in data.get("scopes", [])],
     }
 
-def run_probe(manifest_path: str) -> dict:
+
+def run_probe(manifest_path: str, timeout: int = 10) -> dict:
     """Run all probes for a given manifest."""
     manifest_probe = probe_manifest(manifest_path)
-    runtime_type = manifest_probe.get("runtime_type", "stdio")
+    if not manifest_probe.get("valid"):
+        return {"manifest": manifest_probe, "runtime": {}, "overall": False}
 
+    try:
+        data = json.loads(Path(manifest_path).read_text())
+    except Exception as e:
+        return {"manifest": manifest_probe, "runtime": {"success": False, "error": str(e)}, "overall": False}
+
+    runtime_type = manifest_probe.get("runtime_type", "stdio")
     if runtime_type == "docker":
-        image = json.loads(Path(manifest_path).read_text()).get("runtime", {}).get("image", "")
-        result = probe_docker(image)
+        result = probe_docker(data.get("runtime", {}).get("image", ""), timeout=timeout)
     elif runtime_type == "remote":
-        url = json.loads(Path(manifest_path).read_text()).get("runtime", {}).get("url", "")
-        result = asyncio.run(probe_http(url))
+        result = asyncio.run(probe_http(data.get("runtime", {}).get("url", ""), timeout=timeout))
     else:
-        result = asyncio.run(probe_stdio(manifest_path))
+        result = asyncio.run(probe_stdio(manifest_path, timeout=timeout))
 
     return {
         "manifest": manifest_probe,
         "runtime": result.to_dict(),
         "overall": result.success,
     }
+
 
 if __name__ == "__main__":
     manifest = sys.argv[1] if len(sys.argv) > 1 else "mcp.package.json"

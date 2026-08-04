@@ -1,42 +1,56 @@
 #!/usr/bin/env python3
 # cli/bin/mcp-benchmark
 
-import sys, json
-sys.path.insert(0, "packages/benchmark/src")
+import sys, json, argparse, os
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "packages" / "benchmark" / "src"))
 
 from runner import BenchmarkRunner
+from dataclasses import asdict
 
-def main():
-    if "--help" in sys.argv or len(sys.argv) < 2:
-        print("""
-MCP Benchmark - Run standardized benchmarks on MCP server manifests.
 
-Usage:
-  mcp-benchmark <manifest.json> [--output report.json] [--verbose]
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="mcp-benchmark",
+        description="Run standardized benchmarks against MCP servers.",
+    )
+    parser.add_argument("manifest", help="Path to an MCP package manifest")
+    parser.add_argument("--iterations", type=int, default=100, help="Requests per worker (default 100)")
+    parser.add_argument("--concurrency", type=int, default=1, help="Concurrent sessions (default 1)")
+    parser.add_argument("--timeout", type=int, default=5, help="Per-request timeout in seconds")
+    parser.add_argument("--output", "-o", help="Write JSON report to file")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed per-factor output")
+    args = parser.parse_args(argv)
 
-Options:
-  --help       Show this help message
-  --output     Write JSON report to file
-  --verbose    Show detailed output
-
-Examples:
-  mcp-benchmark mcp.package.json
-  mcp-benchmark mcp.package.json --output report.json
-  mcp-benchmark mcp.package.json --verbose
-""")
-        sys.exit(0)
-    
-    manifest = sys.argv[1]
-    runner = BenchmarkRunner(manifest)
+    runner = BenchmarkRunner(
+        args.manifest,
+        iterations=args.iterations,
+        concurrency=args.concurrency,
+        timeout=args.timeout,
+    )
     result = runner.run()
-    
-    print(json.dumps(result.__dict__, indent=2))
-    
-    if "--output" in sys.argv:
-        idx = sys.argv.index("--output") + 1
-        with open(sys.argv[idx], "w") as f:
-            json.dump(result.__dict__, f, indent=2)
-            print(f"\nReport written to {sys.argv[idx]}")
+    report = asdict(result)
+
+    if args.verbose:
+        print(f"Target:     {args.manifest}")
+        print(f"Transport:  {report['transport']}")
+        print(f"Latency:    p50={report['latency_ms']}ms  p95={report['latency_p95_ms']}ms  p99={report['latency_p99_ms']}ms")
+        print(f"Throughput: {report['throughput_rps']} req/s")
+        print(f"Error rate: {report['error_rate']*100:.2f}%  ({report['errors']}/{report['requests']+report['errors']})")
+        print(f"Success:    {report['success']}")
+        if report.get("error"):
+            print(f"Error:      {report['error']}")
+    else:
+        print(json.dumps(report, indent=2))
+
+    if args.output:
+        out = Path(args.output)
+        out.write_text(json.dumps(report, indent=2))
+        print(f"\nReport written to {out}")
+
+    sys.exit(0 if report["success"] else 1)
+
 
 if __name__ == "__main__":
     main()
