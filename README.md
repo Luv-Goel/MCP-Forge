@@ -1,56 +1,73 @@
-# MCP Forge
+<div align="center">
+  <h1>🛠️ MCP Forge</h1>
+  <p><strong>The trusted operating layer for Model Context Protocol (MCP) servers.
+</strong></p>
+  <p>🔗 <a href="https://github.com/Luv-Goel/MCP-Forge">https://github.com/Luv-Goel/MCP-Forge</a></p>
+  <p>Discover, validate, score, benchmark, sandbox-test, and install MCP servers with absolute confidence.</p>
+  
+  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+  [![Version](https://img.shields.io/badge/version-1.1.0-success.svg)](#)
+  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+</div>
 
-> **The trusted operating layer for MCP servers.**
-> Discover, validate, score, benchmark, sandbox-test, and install MCP servers with confidence.
+<br/>
 
-MCP Forge is a platform and toolchain for the **Model Context Protocol** ecosystem. It turns the wild world of MCP servers into a verified, scored, and easily installable registry:
-
-- **Trust infrastructure** — real manifest validation against the official schema, runtime probing, explainable trust scoring, and security analysis.
-- **Runtime tooling** — benchmark latency/throughput against live servers, sandbox-test JSON-RPC calls, and enforce layer-7 egress allowlists.
-- **Compatibility** — generate ready-to-use install configs for Claude Desktop, OpenAI-compatible clients, VS Code, and Docker Compose.
-- **Registry API + Web UI** — a durable JSON-backed registry with search, filters, pagination, release management, and a package browser.
-
----
-
-## Architecture
-
-```
-MCP-Forge/
-├── apps/
-│   ├── api/                 # Fastify registry API (search, CRUD, releases, health)
-│   └── web/                 # Next.js web app (packages, docs, dashboard, sandbox)
-│       └── app/api/agent/sandbox/   # HTTP sandbox route -> python sandbox runner
-├── packages/
-│   ├── manifest-spec/       # Manifest loader + JSON Schema validation
-│   ├── runtime/             # probe.py, sandbox.py, channel_egress_hook.py
-│   ├── scoring/             # Explainable trust score engine
-│   ├── security/            # Scope analysis, SSRF detection
-│   ├── client-templates/    # Install config generators + compatibility matrix
-│   └── benchmark/           # Real stdio/HTTP benchmarking runner
-├── cli/bin/                 # mcp-validate, mcp-probe, mcp-score, mcp-snapshot,
-│                            # mcp-benchmark, mcp-generate, mcp-compat, mcp-security
-├── schemas/                 # mcp.package.v1.schema.json
-├── examples/                # Sample manifests (real package + fixture server)
-└── tests/                   # pytest suite + fixture MCP server
-```
-
-### Data flow
-
-```
-Manifest (mcp.package.json)
-   │  mcp-validate ──► JSON Schema + semantic checks
-   │  mcp-probe    ──► launch server, send initialize, capture capabilities
-   │  mcp-score    ──► weighted, explainable trust grade
-   │  mcp-benchmark──► spawn server, N requests, latency p50/p95/p99 + rps
-   ▼
-Registry API (persists to data/packages.json)
-   ▼
-Web UI (browse / search / sandbox / docs)
-```
+![MCP Forge Architecture](docs/assets/architecture_diagram.jpg)
 
 ---
 
-## Getting Started
+## 📖 Table of Contents
+
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Architecture & Data Flow](#-architecture--data-flow)
+- [Getting Started](#-getting-started)
+- [CLI Toolchain](#-cli-toolchain)
+- [Registry API](#-registry-api)
+- [Security Model](#-security-model)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🌟 Overview
+
+MCP Forge is a professional platform and toolchain designed for the **Model Context Protocol** ecosystem. It provides the infrastructure needed to turn the growing world of MCP servers into a verified, scored, and securely installable registry. 
+
+Whether you are an MCP server developer looking to validate your work, or an organization wanting to safely deploy third-party MCP agents, Forge provides the guardrails and runtime tooling you need.
+
+---
+
+## ✨ Key Features
+
+- 🛡️ **Trust Infrastructure** — Real manifest validation against the official schema, runtime probing, explainable trust scoring, and deep security analysis.
+- ⚡ **Runtime Tooling** — Benchmark latency and throughput against live servers, and sandbox-test JSON-RPC calls securely.
+- 🔄 **Live Polling** — Use `mcp-watch` for real-time manifest validation during development.
+- 🔌 **Universal Compatibility** — Generate ready-to-use install configs for Claude Desktop, OpenAI-compatible clients, VS Code, and Docker Compose.
+- 🌐 **Registry API + Web UI** — A durable JSON-backed registry with powerful search, dynamic filters, pagination, release management, and a beautiful Next.js package browser.
+
+---
+
+## 🏗️ Architecture & Data Flow
+
+```mermaid
+graph TD
+    A[Manifest<br/>mcp.package.json] -->|mcp-validate| B(Semantic Checks & Schema)
+    B -->|mcp-probe| C(Runtime Probe & Capabilities)
+    C -->|mcp-score| D(Explainable Trust Grade)
+    D -->|mcp-benchmark| E(Latency & Throughput Stats)
+    
+    E --> F[(Registry API<br/>data/packages.json)]
+    
+    F --> G[Web UI]
+    G --> H[Package Browser]
+    G --> I[Sandbox Tester]
+    G --> J[Dashboard]
+```
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -58,28 +75,48 @@ Web UI (browse / search / sandbox / docs)
 - Node.js 20+
 - Optional: Docker (for container-based servers)
 
-### Quick start
+### Installation
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
-cd apps/api && npm install && cd ../..
-cd apps/web && npm install && cd ../..
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Luv-Goel/MCP-Forge.git
+   cd MCP-Forge
+   ```
 
-# Start the registry API (port 8080, auto-seeds starter packages)
-cd apps/api && npm run dev
+2. **Install dependencies:**
+   ```bash
+   # Python core tools
+   pip install -r requirements.txt
+   
+   # Node services
+   cd apps/api && npm install && cd ../..
+   cd apps/web && npm install && cd ../..
+   ```
 
-# Start the web app (port 3000, proxies /v1 to the API)
-cd apps/web && npm run dev
-```
+3. **Launch the platform:**
+   ```bash
+   # Start the registry API (port 8080)
+   cd apps/api && npm run dev
+   
+   # Start the web app (port 3000)
+   cd apps/web && npm run dev
+   ```
+   Open `http://localhost:3000` to access the Web UI.
 
-Then open `http://localhost:3000`.
+---
 
-### CLI tools
+## 🧰 CLI Toolchain
+
+Forge comes with a comprehensive suite of CLI tools for developers and CI/CD environments.
+
+![CLI Score Output](docs/assets/cli_score_screenshot.jpg)
 
 ```bash
 # Validate a manifest against the official schema
 python cli/bin/mcp-validate examples/mcp.package.json
+
+# Watch a manifest for changes and validate in real-time (NEW)
+python cli/bin/mcp-watch examples/mcp.package.json --interval 2
 
 # Probe a server's runtime (launches it and sends initialize)
 python cli/bin/mcp-probe examples/echo-server.mcp.package.json
@@ -87,127 +124,64 @@ python cli/bin/mcp-probe examples/echo-server.mcp.package.json
 # Compute an explainable trust score
 python cli/bin/mcp-score examples/mcp.package.json
 
-# Create a reproducible release snapshot
-python cli/bin/mcp-snapshot examples/mcp.package.json --output snapshot.json
-
 # Benchmark a live server (latency percentiles + throughput)
-python cli/bin/mcp-benchmark examples/echo-server.mcp.package.json --iterations 200 --verbose
-
-# Generate install configs for every supported client
-python cli/bin/mcp-generate examples/mcp.package.json --output-dir ./configs
-
-# Analyze compatibility against every supported client
-python cli/bin/mcp-compat examples/mcp.package.json
+python cli/bin/mcp-benchmark examples/echo-server.mcp.package.json --iterations 200
 
 # Run security policy analysis (scopes, SSRF, docker hygiene)
 python cli/bin/mcp-security examples/mcp.package.json
+
+# Generate install configs for supported clients
+python cli/bin/mcp-generate examples/mcp.package.json --output-dir ./configs
 ```
 
-All tools also accept `--output/-o` to write JSON reports to disk.
+*Tip: All tools support the `--output/-o` flag to write structured JSON reports.*
 
 ---
 
-## Registry API
+## 🔌 Registry API
 
-Base URL: `http://localhost:8080`
+The Registry API (`http://localhost:8080`) provides a durable store for MCP packages and releases.
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Liveness probe (uptime, version, registry counts) |
-| GET | `/v1/packages` | List packages (query, filters, sort, pagination) |
-| GET | `/v1/packages/:slug` | Package detail + releases |
-| POST | `/v1/packages` | Register a package |
-| PUT | `/v1/packages/:slug` | Update a package |
-| DELETE | `/v1/packages/:slug` | Remove a package |
-| GET | `/v1/packages/:slug/releases` | List releases |
-| POST | `/v1/packages/:slug/releases` | Publish a release |
-| GET | `/v1/packages/:slug/releases/:version` | Fetch a specific release |
-| GET | `/v1/packages/:slug/trust` | Explainable trust score |
-| GET | `/v1/packages/:slug/compat` | Client compatibility matrix |
-| GET | `/v1/packages/:slug/install` | Install configs (all clients, or `?client=`) |
-| GET | `/v1/search` | Search with transport/auth filters |
-| GET | `/v1/stats` | Registry statistics |
-
-### List query parameters
-
-- `q` — free-text search (name, slug, description, transports, tags)
-- `transport` — `stdio` | `streamable-http` | `sse`
-- `auth` — `none` | `api_key` | `oauth` | `bearer`
-- `primitive` — `tools` | `prompts` | `resources` | `sampling`
-- `verified` — `true` | `false`
-- `sort` — `updated` | `stars` | `name`
-- `limit` / `offset` — pagination (default `limit=20`, max `100`)
-
-### Configuration (environment variables)
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `PORT` | `8080` | API port |
-| `HOST` | `0.0.0.0` | Bind host |
-| `LOG_LEVEL` | `info` | pino log level |
-| `DATA_FILE` | `data/packages.json` | JSON persistence file |
-| `RATE_LIMIT_MAX` | `120` | Requests per window |
-| `RATE_LIMIT_WINDOW` | `1 minute` | Rate-limit window |
-| `CORS_ORIGIN` | `*` | Allowed CORS origin |
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/v1/packages` | `GET` | List packages (supports `q`, `transport`, `auth` filters) |
+| `/v1/packages/:slug` | `GET` | Get package details |
+| `/v1/packages` | `POST` | Register a new package |
+| `/v1/packages/:slug/releases` | `POST` | Publish a new release |
+| `/v1/packages/:slug/trust` | `GET` | Compute live trust score |
+| `/v1/packages/:slug/install`| `GET` | Generate installation configs |
 
 ---
 
-## Sandbox Tester
+## 🔒 Security Model
 
-The web UI includes an interactive sandbox on every package detail page. It:
+MCP Forge prioritizes the safe execution of third-party model context servers:
 
-1. Resolves the package manifest from the registry.
-2. Spawns the server's stdio runtime in a subprocess (one request per process — no state leaks).
-3. Sends your JSON-RPC request (default `list_tools`) with a 15s timeout.
-4. Streams back logs and the JSON response.
+- **Scope Analysis:** Flags unbounded filesystem paths, unrestricted network egress, and overly broad wildcard patterns.
+- **SSRF Detection:** Warns on known Server-Side Request Forgery testing endpoints in egress domains.
+- **Egress Hooks:** Utilizes `channel_egress_hook.py` for layer-7 allowlist/denylist enforcement with full JSONL audit logging.
+- **Sandbox Isolation:** Employs subprocess isolation with strict per-request lifetimes during sandbox testing.
 
-The sandbox is **rate-limited to 10 requests/minute** and time-boxed, and non-stdio runtimes are rejected.
-
----
-
-## Security Model
-
-- **Scope analysis** — flags unbounded filesystem paths, unrestricted network egress, and wildcard patterns.
-- **SSRF detection** — warns on known SSRF-testing endpoints in egress domains.
-- **Docker hygiene** — warns on unpinned `:latest` image tags.
-- **Layer-7 egress hook** (`channel_egress_hook.py`) — allowlist/denylist enforcement with a JSONL audit log.
-- **Sandbox isolation** — subprocess isolation, per-request lifetime, bounded network via manifest scope inspection.
+For detailed security procedures or to report a vulnerability, please see our [Security Policy](SECURITY.md).
 
 ---
 
-## Testing
+## 🤝 Contributing
 
-```bash
-# Python toolchain (46 tests)
-python -m pytest tests/ -v
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) to learn how you can help build the future of the MCP ecosystem. 
 
-# Registry API (26 tests)
-cd apps/api && npx vitest run
-
-# Typechecks
-cd apps/api && npx tsc --noEmit
-cd apps/web && npx tsc --noEmit
-
-# Web production build
-cd apps/web && npm run build
-```
-
-Or use `make test`, `make typecheck`, `make web-build` from the repo root.
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feat/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'feat: Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feat/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-## Roadmap
+## 📄 License
 
-| Phase | Status | Focus |
-|-------|--------|-------|
-| 1 Foundation | Done | Manifest spec, schema, dual-backend scaffold |
-| 2 Real Utility | Done | Probing, install generators, trust scoring, compatibility matrix |
-| 3 Differentiation | Done | Sandbox tester, security analysis, snapshots |
-| 4 Performance | Done | Benchmarking suite + trust integration |
-| 5+ | Next | Observability, enterprise security, client diversity, federation, AI curation |
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
-
-## License
-
-MIT © [Luv Goel](https://github.com/Luv-Goel)
+<div align="center">
+  <sub>Built with ❤️ by Luv Goel</sub>
+</div>

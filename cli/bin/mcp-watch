@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+"""
+mcp-watch - Live manifest polling and validation
+"""
+import sys
+import time
+import os
+import argparse
+import subprocess
+
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def main():
+    parser = argparse.ArgumentParser(description="Watch an MCP manifest for changes and validate in real-time.")
+    parser.add_argument("manifest", help="Path to the mcp.package.json manifest")
+    parser.add_argument("--interval", type=int, default=2, help="Polling interval in seconds")
+    
+    args = parser.parse_args()
+    
+    if not os.path.exists(args.manifest):
+        print(f"Error: File '{args.manifest}' not found.")
+        sys.exit(1)
+        
+    last_mtime = 0
+    
+    print(f"Watching {args.manifest} for changes (Interval: {args.interval}s)...")
+    print("Press Ctrl+C to stop.")
+    
+    try:
+        while True:
+            current_mtime = os.path.getmtime(args.manifest)
+            if current_mtime != last_mtime:
+                clear_screen()
+                print(f"--- Changes detected in {args.manifest} ---")
+                print("Running mcp-validate...\n")
+                
+                # We assume mcp-validate is in the same directory
+                bin_dir = os.path.dirname(os.path.abspath(__file__))
+                validate_cmd = os.path.join(bin_dir, "mcp-validate")
+                
+                try:
+                    # Run the validation
+                    result = subprocess.run(
+                        [sys.executable, validate_cmd, args.manifest],
+                        capture_output=True,
+                        text=True
+                    )
+                    
+                    if result.returncode == 0:
+                        print("\033[92m[PASS] Manifest is valid.\033[0m")
+                    else:
+                        print("\033[91m[FAIL] Validation errors found:\033[0m")
+                        
+                    print("\n--- Output ---")
+                    print(result.stdout)
+                    if result.stderr:
+                        print(result.stderr)
+                        
+                except Exception as e:
+                    print(f"Error running validation: {e}")
+                    
+                last_mtime = current_mtime
+                
+            time.sleep(args.interval)
+            
+    except KeyboardInterrupt:
+        print("\nStopped watching.")
+        sys.exit(0)
+
+if __name__ == "__main__":
+    main()
