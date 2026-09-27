@@ -1,0 +1,1 @@
+//! Errno normalization mapping stub

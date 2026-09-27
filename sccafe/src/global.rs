@@ -1,0 +1,1 @@
+//! Global state (re-export) stub

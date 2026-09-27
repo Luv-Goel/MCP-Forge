@@ -1,0 +1,19 @@
+{
+  "name": "mcp-forge",
+  "version": "0.1.0",
+  "description": "The trusted operating layer for MCP servers",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  }
+}

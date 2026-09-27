@@ -1,0 +1,1 @@
+//! Errno-style generation error codes stub
