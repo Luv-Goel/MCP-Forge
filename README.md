@@ -27,7 +27,7 @@ MCP Forge is a **trusted operating layer** for the MCP (Model Context Protocol) 
 |-------|--------|-----------|
 | **Phase 1: Foundation** | ✅ **COMPLETED** | Manifest spec, validator CLI, registry schema |
 | **Phase 2: Real Utility** | ✅ **COMPLETED** | Runtime probe, install generator, trust scoring, compatibility matrix |
-| **Phase 3: Differentiation** | 🚧 **IN PROGRESS** | Sandbox tester, security policy analysis, reproducible releases |
+| **Phase 3: Differentiation** | ✅ **COMPLETED** | Sandbox tester, security policy analysis, reproducible releases |
 | **Phase 4: Ecosystem Lock-In** | Pending | Federation, advanced CLI suite |
 
 ---
@@ -138,8 +138,8 @@ MCP-Forge/
 | **Trust Signals** | ✅ Phase 2 | Verified publisher badge, signed release info, trust score, security warnings |
 | **Local Runtime** | ✅ Phase 2 | Lightweight runner for stdio/Docker/remote servers |
 | **Install Generator** | ✅ Phase 2 | One-click export for Claude, OpenAI, VS Code, Docker Compose |
-| **Sandbox Tester** | 🚧 Phase 3 | Safe test UI with bounded permissions and visible logs |
-| **Security Layer** | 🚧 Phase 3 | Scope inspection, least-privilege warnings, network policy hints |
+| **Sandbox Tester** | ✅ Phase 3 | Safe test UI with bounded permissions and visible logs |
+| **Security Layer** | ✅ Phase 3 | Scope inspection, least-privilege warnings, network policy hints |
 | **Compatibility Matrix** | ✅ Phase 2 | Shows client transport/primitive/auth support |
-| **Versioned Manifests** | ✅ Phase 1 | Reproducible package metadata for each release |
+| **Versioned Manifests** | ✅ Phase 3 (reproducible snapshots) | Reproducible package metadata for each release |
 | **Publisher Tooling** | ✅ Phase 2 | `mcp-validate`, `mcp-probe`, `mcp-score` CLI tools |
