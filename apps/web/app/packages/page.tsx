@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -33,10 +34,13 @@ interface ListResponse {
 const TRANSPORTS = ['stdio', 'streamable-http', 'sse'];
 const AUTH_TYPES = ['none', 'api_key', 'oauth', 'bearer'];
 
-export default function PackagesPage() {
-    const [query, setQuery] = useState('');
-    const [transport, setTransport] = useState('');
-    const [auth, setAuth] = useState('');
+function PackagesPageInner() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const [query, setQuery] = useState(searchParams.get('q') ?? '');
+    const [transport, setTransport] = useState(searchParams.get('transport') ?? '');
+    const [auth, setAuth] = useState(searchParams.get('auth') ?? '');
+    const [verified, setVerified] = useState(searchParams.get('verified') ?? '');
     const [data, setData] = useState<ListResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -51,6 +55,7 @@ export default function PackagesPage() {
             if (query) params.set('q', query);
             if (transport) params.set('transport', transport);
             if (auth) params.set('auth', auth);
+            if (verified) params.set('verified', verified);
             const result = await apiFetch<ListResponse>(`/v1/packages?${params}`);
             setData(result);
         } catch (e) {
@@ -58,15 +63,36 @@ export default function PackagesPage() {
         } finally {
             setLoading(false);
         }
-    }, [query, transport, auth, offset]);
+    }, [query, transport, auth, verified, offset]);
+
+    useEffect(() => {
+        const q = searchParams.get('q') ?? '';
+        const t = searchParams.get('transport') ?? '';
+        const a = searchParams.get('auth') ?? '';
+        const v = searchParams.get('verified') ?? '';
+        setQuery(q);
+        setTransport(t);
+        setAuth(a);
+        setVerified(v);
+        setOffset(0);
+    }, [searchParams]);
 
     useEffect(() => {
         setOffset(0);
-    }, [query, transport, auth]);
+    }, [query, transport, auth, verified]);
 
     useEffect(() => {
         load();
     }, [load]);
+
+    const updateUrl = (patch: Record<string, string>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        for (const [key, value] of Object.entries(patch)) {
+            if (value) params.set(key, value);
+            else params.delete(key);
+        }
+        router.replace(`/packages?${params.toString()}`);
+    };
 
     const totalPages = data ? Math.max(1, Math.ceil(data.total / limit)) : 1;
     const page = Math.floor(offset / limit) + 1;
@@ -84,12 +110,18 @@ export default function PackagesPage() {
                 <Input
                     placeholder="Search packages, tools, tags..."
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => {
+                        setQuery(e.target.value);
+                        updateUrl({ q: e.target.value });
+                    }}
                     className="md:max-w-sm"
                 />
                 <select
                     value={transport}
-                    onChange={(e) => setTransport(e.target.value)}
+                    onChange={(e) => {
+                        setTransport(e.target.value);
+                        updateUrl({ transport: e.target.value });
+                    }}
                     className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm"
                 >
                     <option value="">All transports</option>
@@ -99,13 +131,28 @@ export default function PackagesPage() {
                 </select>
                 <select
                     value={auth}
-                    onChange={(e) => setAuth(e.target.value)}
+                    onChange={(e) => {
+                        setAuth(e.target.value);
+                        updateUrl({ auth: e.target.value });
+                    }}
                     className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm"
                 >
                     <option value="">All auth</option>
                     {AUTH_TYPES.map((t) => (
                         <option key={t} value={t}>{t}</option>
                     ))}
+                </select>
+                <select
+                    value={verified}
+                    onChange={(e) => {
+                        setVerified(e.target.value);
+                        updateUrl({ verified: e.target.value });
+                    }}
+                    className="h-10 rounded-md border border-gray-300 bg-white px-3 text-sm"
+                >
+                    <option value="">All</option>
+                    <option value="true">Verified</option>
+                    <option value="false">Unverified</option>
                 </select>
             </div>
 
@@ -162,5 +209,13 @@ export default function PackagesPage() {
                 </>
             )}
         </div>
+    );
+}
+
+export default function PackagesPage() {
+    return (
+        <Suspense fallback={<div className="mx-auto max-w-6xl px-4 py-8 text-gray-500">Loading packages...</div>}>
+            <PackagesPageInner />
+        </Suspense>
     );
 }

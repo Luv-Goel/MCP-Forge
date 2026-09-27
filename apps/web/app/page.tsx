@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import { RegistryStats } from '@/components/registry-stats';
 
 const FEATURES = [
     {
@@ -19,7 +20,14 @@ const FEATURES = [
     },
 ];
 
-const POPULAR_FILTERS = ['filesystem', 'web-search', 'no-auth', 'docker', 'verified', 'streamable-http'];
+const POPULAR_FILTERS: Array<{ label: string; query: string }> = [
+    { label: 'filesystem', query: 'q=filesystem' },
+    { label: 'web-search', query: 'q=web-search' },
+    { label: 'no-auth', query: 'auth=none' },
+    { label: 'docker', query: 'transport=stdio&q=docker' },
+    { label: 'verified', query: 'verified=true' },
+    { label: 'streamable-http', query: 'transport=streamable-http' },
+];
 
 export default function HomePage() {
     return (
@@ -41,23 +49,30 @@ export default function HomePage() {
 
             <section className="bg-gray-50 px-4 py-12">
                 <div className="mx-auto max-w-2xl">
-                    <div className="relative">
+                    <form action="/packages" className="relative">
                         <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                        <Input placeholder="Search for tools, transports, auth type..." className="h-12 pl-10 text-lg" />
-                    </div>
+                        <Input
+                            name="q"
+                            placeholder="Search for tools, transports, auth type..."
+                            className="h-12 pl-10 text-lg"
+                            defaultValue=""
+                        />
+                    </form>
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
-                        {POPULAR_FILTERS.map((t) => (
+                        {POPULAR_FILTERS.map((f) => (
                             <Link
-                                key={t}
-                                href={`/packages?filter=${t}`}
+                                key={f.label}
+                                href={`/packages?${f.query}`}
                                 className="rounded-full border bg-white px-3 py-1 text-sm hover:bg-gray-100"
                             >
-                                {t}
+                                {f.label}
                             </Link>
                         ))}
                     </div>
                 </div>
             </section>
+
+            <RegistryStats />
 
             <section className="mx-auto max-w-6xl px-4 py-12">
                 <h2 className="mb-6 text-center text-2xl font-semibold">Why MCP Forge?</h2>

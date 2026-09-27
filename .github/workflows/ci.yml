@@ -21,6 +21,10 @@ jobs:
         run: |
           python cli/bin/mcp-validate examples/mcp.package.json
           python cli/bin/mcp-validate examples/echo-server.mcp.package.json
+      - name: Run toolchain checks
+        run: |
+          python cli/bin/mcp-compat examples/mcp.package.json
+          python cli/bin/mcp-security examples/echo-server.mcp.package.json
       - name: Run tests
         run: python -m pytest tests/ -v
 

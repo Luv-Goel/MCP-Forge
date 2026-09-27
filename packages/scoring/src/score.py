@@ -99,7 +99,7 @@ def compute_signed_release(manifest: dict) -> tuple[float, str]:
     releases = manifest.get("releases", [])
     if not releases:
         return 0.3, "No releases declared"
-    latest = releases[-1] if releases else {}
+    latest = max(releases, key=lambda r: r.get("published_at", "")) if releases else {}
     sigs = latest.get("signatures", {})
     if sigs.get("maintainer") and sigs.get("forge"):
         return 1.0, "Signed by maintainer and MCP Forge"

@@ -34,3 +34,24 @@ def test_runner_result_serializable():
         "latency_ms", "latency_p95_ms", "latency_p99_ms", "throughput_rps",
         "error_rate", "requests", "errors", "transport", "success", "error",
     }
+
+
+def test_runner_propagates_missing_entrypoint_error():
+    import json
+    from pathlib import Path
+
+    tmp = Path("data") / "bench-missing-entry.json"
+    tmp.parent.mkdir(exist_ok=True)
+    tmp.write_text(json.dumps({
+        "name": "missing",
+        "slug": "missing-entrypoint",
+        "description": "Manifest pointing at a binary that does not exist.",
+        "runtime": {"type": "stdio", "entrypoint": ["/no/such/binary", "serve"]},
+    }))
+    try:
+        runner = BenchmarkRunner(str(tmp), iterations=3)
+        result = runner.run()
+        assert not result.success
+        assert "not found" in result.error
+    finally:
+        tmp.unlink(missing_ok=True)

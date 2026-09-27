@@ -28,7 +28,7 @@ def create_snapshot(manifest_path: str, env=None) -> dict:
     slug = m.get("slug")
     runtime = m.get("runtime", {})
     releases = m.get("releases", [])
-    latest = releases[-1] if releases else {}
+    latest = max(releases, key=lambda r: r.get("published_at", "")) if releases else {}
 
     snapshot = {
         "snapshot_id": f"{slug}-{int(time.time())}",

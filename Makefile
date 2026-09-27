@@ -37,7 +37,11 @@ validate:
 	python3 cli/bin/mcp-validate examples/mcp.package.json
 	python3 cli/bin/mcp-validate examples/echo-server.mcp.package.json
 
-lint: validate typecheck
+analyze:
+	python3 cli/bin/mcp-compat examples/mcp.package.json
+	python3 cli/bin/mcp-security examples/echo-server.mcp.package.json
+
+lint: validate analyze typecheck
 
 dev-api:
 	cd apps/api && npm run dev

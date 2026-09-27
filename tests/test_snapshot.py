@@ -46,3 +46,22 @@ def test_snapshot_hash_changes_with_content():
     a = mod.create_snapshot(str(manifest))
     b = mod.create_snapshot(str(ROOT / "examples" / "echo-server.mcp.package.json"))
     assert a["manifest_hash"] != b["manifest_hash"]
+
+
+def test_snapshot_picks_latest_release_by_published_at():
+    import json as _json
+
+    mod = _load_snapshot()
+    manifest = _json.loads((ROOT / "examples" / "mcp.package.json").read_text())
+    manifest["releases"] = [
+        {"version": "1.0.0", "published_at": "2026-01-01T00:00:00Z", "signatures": {"maintainer": "a"}},
+        {"version": "2.0.0", "published_at": "2026-06-01T00:00:00Z", "signatures": {"maintainer": "b"}},
+    ]
+    tmp = ROOT / "data" / "snapshot-latest-tmp.json"
+    tmp.parent.mkdir(exist_ok=True)
+    tmp.write_text(_json.dumps(manifest))
+    try:
+        snap = mod.create_snapshot(str(tmp))
+        assert snap["release"]["version"] == "2.0.0"
+    finally:
+        tmp.unlink(missing_ok=True)

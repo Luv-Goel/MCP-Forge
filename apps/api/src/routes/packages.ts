@@ -84,6 +84,13 @@ export const packages: FastifyPluginAsync = async (fastify) => {
             });
         }
         const pkg = parsed.data;
+        const existing = await store.getPackage(pkg.slug);
+        if (existing) {
+            return reply.status(409).send({
+                error: 'CONFLICT',
+                message: `Package '${pkg.slug}' already exists; use PUT to update it`,
+            });
+        }
         await store.putPackage(pkg);
         return reply.status(201).send(pkg);
     });
@@ -95,6 +102,12 @@ export const packages: FastifyPluginAsync = async (fastify) => {
             return reply.status(400).send({
                 error: 'BAD_REQUEST',
                 details: parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
+            });
+        }
+        if (parsed.data.slug !== request.params.slug) {
+            return reply.status(400).send({
+                error: 'BAD_REQUEST',
+                message: `URL slug '${request.params.slug}' does not match body slug '${parsed.data.slug}'`,
             });
         }
         const existing = await store.getPackage(request.params.slug);

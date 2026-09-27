@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""mcp-compat - analyze a package against the client compatibility matrix."""
+import argparse
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "packages" / "client-templates" / "src"))
+
+from compat import analyze_package
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="mcp-compat",
+        description="Analyze an MCP package manifest against supported client capabilities.",
+    )
+    parser.add_argument("manifest", help="Path to an MCP package manifest")
+    parser.add_argument("--client", help="Check a single client (default: all)")
+    parser.add_argument("--output", "-o", help="Write the report to a file")
+    args = parser.parse_args(argv)
+
+    report = analyze_package(args.manifest)
+    if "error" in report:
+        print(f"error: {report['error']}", file=sys.stderr)
+        sys.exit(2)
+
+    if args.client:
+        matrix = report.get("matrix", {})
+        if args.client not in matrix:
+            print(f"error: unknown client '{args.client}'", file=sys.stderr)
+            sys.exit(2)
+        selected = {args.client: matrix[args.client]}
+        report = {**report, "matrix": selected}
+
+    if args.output:
+        Path(args.output).write_text(json.dumps(report, indent=2))
+        print(f"Compatibility report written to {args.output}")
+    else:
+        print(json.dumps(report, indent=2))
+
+    compatible = report.get("compatible_clients", [])
+    if args.client and args.client not in compatible:
+        sys.exit(1)
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

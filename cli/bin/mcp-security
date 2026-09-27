@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+"""mcp-security - run security policy analysis on an MCP package manifest."""
+import argparse
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "packages" / "security" / "src"))
+
+from analyze import analyze_manifest, print_report
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        prog="mcp-security",
+        description="Analyze an MCP package manifest for security policy issues.",
+    )
+    parser.add_argument("manifest", help="Path to an MCP package manifest")
+    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+    parser.add_argument("--output", "-o", help="Write the report to a file")
+    args = parser.parse_args(argv)
+
+    report = analyze_manifest(args.manifest)
+    if args.json:
+        payload = json.dumps({
+            "package": report.package,
+            "summary": report.summary,
+            "passed": report.passed,
+            "findings": [
+                {"level": f.level, "code": f.code, "message": f.message, "path": f.path}
+                for f in report.findings
+            ],
+        }, indent=2)
+        if args.output:
+            Path(args.output).write_text(payload)
+        print(payload)
+    else:
+        print_report(report)
+        if args.output:
+            Path(args.output).write_text(json.dumps({
+                "package": report.package,
+                "summary": report.summary,
+                "passed": report.passed,
+                "findings": [
+                    {"level": f.level, "code": f.code, "message": f.message, "path": f.path}
+                    for f in report.findings
+                ],
+            }, indent=2))
+
+    sys.exit(0 if report.passed else 1)
+
+
+if __name__ == "__main__":
+    main()

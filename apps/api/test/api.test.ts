@@ -88,6 +88,26 @@ describe('MCP Forge API', () => {
         expect(fetched.json().name).toBe('Test Package');
     });
 
+    it('POST /v1/packages returns 409 for a duplicate slug', async () => {
+        const res = await app.inject({
+            method: 'POST',
+            url: '/v1/packages',
+            payload: { ...VALID_PACKAGE, description: 'A second attempt at the same slug, long enough to validate.' },
+        });
+        expect(res.statusCode).toBe(409);
+        expect(res.json().error).toBe('CONFLICT');
+    });
+
+    it('PUT /v1/packages/:slug rejects a slug mismatch', async () => {
+        const res = await app.inject({
+            method: 'PUT',
+            url: '/v1/packages/test-package',
+            payload: { ...VALID_PACKAGE, slug: 'other-slug' },
+        });
+        expect(res.statusCode).toBe(400);
+        expect(res.json().error).toBe('BAD_REQUEST');
+    });
+
     it('POST /v1/packages rejects invalid payloads', async () => {
         const res = await app.inject({
             method: 'POST',
@@ -175,5 +195,79 @@ describe('MCP Forge API', () => {
     it('invalid query params return 400', async () => {
         const res = await app.inject({ method: 'GET', url: '/v1/packages?limit=abc' });
         expect(res.statusCode).toBe(400);
+    });
+
+    it('GET /v1/stats returns registry statistics', async () => {
+        const res = await app.inject({ method: 'GET', url: '/v1/stats' });
+        expect(res.statusCode).toBe(200);
+        const body = res.json();
+        expect(body.packages).toBeGreaterThan(0);
+        expect(typeof body.verified).toBe('number');
+        expect(typeof body.transports).toBe('object');
+        expect(typeof body.auth).toBe('object');
+        expect(body.total_stars).toBeGreaterThanOrEqual(0);
+    });
+
+    it('GET /health includes uptime and registry counts', async () => {
+        const res = await app.inject({ method: 'GET', url: '/health' });
+        expect(res.statusCode).toBe(200);
+        const body = res.json();
+        expect(body.ok).toBe(true);
+        expect(typeof body.uptime_s).toBe('number');
+        expect(body.registry.packages).toBeGreaterThan(0);
+    });
+
+    it('GET /v1/packages/:slug/trust returns an explainable score', async () => {
+        const res = await app.inject({ method: 'GET', url: '/v1/packages/filesystem-tools/trust' });
+        expect(res.statusCode).toBe(200);
+        const body = res.json();
+        expect(typeof body.total).toBe('number');
+        expect(body.total).toBeGreaterThanOrEqual(0);
+        expect(body.total).toBeLessThanOrEqual(1);
+        expect(['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'F']).toContain(body.grade);
+        expect(Array.isArray(body.factors)).toBe(true);
+        expect(body.factors.length).toBeGreaterThan(0);
+    });
+
+    it('GET /v1/packages/:slug/compat returns a compatibility matrix', async () => {
+        const res = await app.inject({ method: 'GET', url: '/v1/packages/filesystem-tools/compat' });
+        expect(res.statusCode).toBe(200);
+        const body = res.json();
+        expect(Array.isArray(body.compatible_clients)).toBe(true);
+        expect(Array.isArray(body.matrix)).toBe(true);
+        expect(body.matrix.length).toBeGreaterThan(0);
+    });
+
+    it('GET /v1/packages/:slug/install returns configs for all clients', async () => {
+        const res = await app.inject({ method: 'GET', url: '/v1/packages/filesystem-tools/install' });
+        expect(res.statusCode).toBe(200);
+        const body = res.json();
+        expect(body['claude-desktop']).toBeDefined();
+        expect(body['docker-compose']).toBeDefined();
+        expect(typeof body['claude-desktop']).toBe('string');
+    });
+
+    it('GET /v1/packages/:slug/install?client= filters by client', async () => {
+        const res = await app.inject({ method: 'GET', url: '/v1/packages/filesystem-tools/install?client=vscode' });
+        expect(res.statusCode).toBe(200);
+        const body = res.json();
+        expect(Object.keys(body)).toEqual(['vscode']);
+    });
+
+    it('GET /v1/packages/:slug/install rejects unknown client', async () => {
+        const res = await app.inject({ method: 'GET', url: '/v1/packages/filesystem-tools/install?client=nope' });
+        expect(res.statusCode).toBe(400);
+    });
+
+    it('analysis endpoints return 404 for missing packages', async () => {
+        for (const path of ['trust', 'compat', 'install']) {
+            const res = await app.inject({ method: 'GET', url: `/v1/packages/ghost/${path}` });
+            expect(res.statusCode).toBe(404);
+        }
+    });
+
+    it('responses include a request id header', async () => {
+        const res = await app.inject({ method: 'GET', url: '/health' });
+        expect(res.headers['x-request-id']).toBeTruthy();
     });
 });

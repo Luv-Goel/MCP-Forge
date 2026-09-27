@@ -20,11 +20,11 @@ def main():
         req_id = msg.get("id")
         if method == "initialize":
             result = {"protocolVersion": "2024-11-05", "capabilities": CAPABILITIES, "serverInfo": {"name": "fixture-server", "version": "1.0.0"}}
-        elif method == "list_tools":
+        elif method == "tools/list":
             result = {"tools": [{"name": "echo", "description": "echo input", "inputSchema": {"type": "object"}}]}
-        elif method == "read_resource":
+        elif method == "resources/read":
             result = {"contents": [{"uri": msg.get("params", {}).get("uri", ""), "text": "resource"}]}
-        elif method == "call_tool":
+        elif method == "tools/call":
             result = {"content": [{"type": "text", "text": "ok"}]}
         elif method == "notifications/initialized":
             continue
