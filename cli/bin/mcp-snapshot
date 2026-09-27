@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+import json, hashlib, os, sys, hmac, time
+from pathlib import Path
+
+def sha256(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: b"", b""): h.update(chunk)
+    return h.hexdigest()
+
+def create_snapshot(manifest_path, env=None):
+    env = env or os.environ
+    try:
+        m = json.loads(Path(manifest_path).read_text())
+    except Exception as e:
+        return {"error": str(e)}
+    name = m.get("name")
+    slug = m.get("slug")
+    runtime = m.get("runtime", {})
+    releases = m.get("releases", [])
+    latest = releases[-1] if releases else {}
+
+    snapshot = {
+        "snapshot_id": f"{slug}-{int(time.time())}",
+        "name": name,
+        "slug": slug,
+        "version": latest.get("version", "0.0.0"),
+        "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "manifest_hash": sha256(manifest_path),
+        "manifest_path": str(Path(manifest_path).resolve()),
+        "source": m.get("source", {}),
+        "runtime": {
+            "type": runtime.get("type"),
+            "entrypoint": " ".join(runtime.get("entrypoint", [])),
+            "image": runtime.get("image"),
+            "url": runtime.get("url"),
+        },
+        "release": {
+            "version": latest.get("version"),
+            "published_at": latest.get("published_at"),
+            "manifest_version": latest.get("manifest_version", "1.0"),
+            "signatures": latest.get("signatures", {}),
+        },
+        "primitives": m.get("primitives", {}),
+        "transports": m.get("transports", []),
+        "scopes": [s["name"] for s in m.get("scopes", [])],
+        "trust_fingerprint": None,
+    }
+    # Optional: set TRUST_SECRET env to sign the snapshot
+    secret = env.get("TRUST_SECRET")
+    if secret:
+        raw = json.dumps(snapshot, sort_keys=True).encode()
+        snapshot["trust_signature"] = hmac.new(secret.encode(), raw, hashlib.sha256).hexdigest()[:16]
+    return snapshot
+
+if __name__ == "__main__":
+    mpath = sys.argv[1] if len(sys.argv) > 1 else "mcp.package.json"
+    print(json.dumps(create_snapshot(mpath), indent=2))
