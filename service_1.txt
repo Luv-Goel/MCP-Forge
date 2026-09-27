@@ -1,0 +1,4 @@
+2026-05-17T10:01:02Z [SECURITY] access control module initialized successfully
+2026-05-17T10:01:02Z [SYSTEM] port binding set to auto mode – randomly assigned ephemeral port
+2026-05-17T10:01:02Z [INFO] startup sequence: config loader → logger → security → metrics
+2026-05-17T10:01:02Z [CRITICAL] CRITICAL: ENAV service is not configured – calibration cannot proceed

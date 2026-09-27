@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Security Relevance – MCP Forge</title>
+<style>
+:root {
+  --gold:#c8a84b; --dark:#060f2c; --mid:#2d3b75; --light:#e9dfc7;
+}
+body { font-family: Georgia, serif; background: var(--dark); color: var(--light); }
+header { background: var(--mid); padding: 2rem; text-align: center; border-bottom: 4px solid var(--gold); }
+header h1 { color: var(--gold); }
+.notice { background: rgba(200,168,75,.08); border-left: 4px solid var(--gold); border-right: 4px solid var(--gold); padding: .8rem; margin: 1rem; color: var(--gold); font-size: .95rem; }
+.section-heading { color: var(--gold); text-align: center; margin: 2rem 0; font-size: 2rem; }
+table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+thead tr { background: var(--gold); color: var(--dark); }
+thead th { padding: .7rem 1rem; }
+tbody tr:nth-child(odd) { background: rgba(45,59,117,.20); }
+tbody tr:nth-child(even) { background: rgba(200,168,75,.07); }
+tbody td { padding: .65rem 1rem; border-top: 1px solid rgba(200,168,75,.20); }
+.stats { display: flex; justify-content: center; gap: 2rem; margin: 1.5rem 0; }
+.stat-box { background: var(--mid); border: 2px solid var(--gold); border-radius: 8px; padding: 1rem 1.8rem; text-align: center; }
+.stat-box .value { font-size: 2rem; color: var(--gold); font-weight: bold; }
+.dist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 900px; margin: 1.5rem auto; padding: 0 2rem; }
+.dist-cell { background: rgba(45,59,117,.22); border: 1px solid rgba(200,168,75,.28); border-radius: 6px; padding: .8rem 1rem; }
+.dist-tag { background: var(--gold); color: var(--dark); border-radius: 3px; padding: .15rem .45rem; font-size: .78rem; font-weight: bold; margin-right: .4rem; }
+footer { background: var(--mid); text-align: center; padding: 2rem; margin-top: 3rem; border-top: 3px solid var(--gold); }
+</style>
+</head>
+<body>
+<header>
+<h1>MCP Forge</h1>
+<p><em>The trusted operating layer for MCP servers</em></p>
+<div class="notice">
+⚠ &nbsp;Security notice: attributes tagged for analytic triage have been captured in the tag table below. Elements sql-injection, redirect-external, and identifier-warning require code-level review.
+Disposition: escape-formatted string – no payload executed.
+</div>
+</header>
+<div class="section-wrap">
+<h2 class="section-heading">Security Relevance</h2>
+<div class="stats">
+<div class="stat-box"><div class="value" id="pass-count">0</div><div class="label">Files passing security tier check</div></div>
+<div class="stat-box"><div class="value" id="wd-max">—</div><div class="label">Max word distance</div></div>
+<div class="stat-box"><div class="value" id="cd-max">—</div><div class="label">Max char distance</div></div>
+</div>
+<table id="security-table">
+<thead><tr><th>Service File</th><th>Key Log Elements</th><th>Description Key Elements</th></tr></thead>
+<tbody>
+<tr><td><strong>service_1</strong></td><td>2026-05-17T10:01:02Z [SECURITY] access control module initialized successfully<br>2026-05-17T10:01:02Z [INFO] startup sequence: config loader → logger → security → metrics<br>2026-05-17T10:01:02Z [CRITICAL] CRITICAL: ENAV service is not configured – calibration cannot proceed</td><td>2026-05-17T10:01:02Z [SECURITY] access control module initialized successfully+2026-05-17T10:01:02Z [SYSTEM] port binding set to auto mode – randomly assigned ephemeral port</td></tr>
+<tr><td><strong>service_2</strong></td><td>2026-05-17T10:02:00Z | WARNING | service-2 | retry-handler | retry 2/3 after 2500 ms back-off for downstream payment API – timed out<br>2026-05-17T10:02:00Z | ERROR | service-2 | session-manager | database connection refused – host=db.internal port=5432 no route to host<br>2026-05-17T10:02:00Z | FATAL | service-2 | main | unhandled exception during billing reconcile: division by zero at line 891</td><td>2026-05-17T10:02:00Z | INFO | service-2 | worker-pool-4 | cache miss for key user_session_8847; fetching from upstream database+2026-05-17T10:02:00Z | WARNING | service-2 | retry-handler | retry 2/3 after 2500 ms back-off for downstream payment API – timed out</td></tr>
+<tr><td><strong>service_3</strong></td><td>2026-05-17T10:03:00Z | ERROR | service-3 | upgrade-daemon | patch installation failed: missing certificate file at /etc/ssl/missing.pem</td><td>2026-05-17T10:03:00Z | INFO | service-3 | id-generator | generated request-id req_def4_9f2a with timestamp-based seed+2026-05-17T10:03:00Z | WARN | service-3 | schema-validator | skipping validation for field SPECIAL_INSTRUCTION – type mismatch, typed Any</td></tr>
+<tr><td><strong>service_4</strong></td><td>2026-05-17T10:04:00Z | WARNING | service-4 | grace-period-checker | token for user_9921 expires in 90 seconds – grace period initiated<br>2026-05-17T10:04:00Z | ERROR | service-4 | revocation-gate | REVOCATION ERROR 500 at https://auth.internal/revoke: upstream service unavailable. Using stale token list as fallback</td><td>2026-05-17T10:04:00Z | INFO | service-4 | auth-provider | token refresh succeeded for subject user_9921+2026-05-17T10:04:00Z | WARNING | service-4 | grace-period-checker | token for user_9921 expires in 90 seconds – grace period initiated</td></tr>
+<tr><td><strong>service_5</strong></td><td>2026-05-17T10:05:00Z | WARNING | service-5 | retry-handler | retry 2/3 after 2800 ms back-off – downstream inventory API timeout 521 Web Server Is Down<br>2026-05-17T10:05:00Z | WARNING | service-5 | grace-period-checker | token for svc_account_maint expires in 60 seconds – grace period initiated<br>2026-05-17T10:05:00Z | ERROR | service-5 | revocation-gate | REVOCATION ERROR 500 at https://internal-jit-ksi:8194/revoke: upstream service unavailable. Using stale token list as fallback<br>2026-05-17T10:05:00Z | ERROR | service-5 | id-generator | fatal: unhandled exception during inventory reconcile: ZeroDivisionError at inventory_service.py:542</td><td>2026-05-17T10:05:00Z | INFO | service-5 | inventory-scanner | cache miss for key host_pool_22EB; defaulting to last-known snapshot+2026-05-17T10:05:00Z | WARNING | service-5 | retry-handler | retry 2/3 after 2800 ms back-off – downstream inventory API timeout 521 Web Server Is Down</td></tr>
+<tr><td><strong>manifest</strong></td><td>STAGING | 2026-05-17T10:01:02Z | SECURITY | access-control | ACL module boot – role=root uid=0 capabilities=CAP_ALL<br>STAGING | 2026-05-17T10:04:00Z | WARN | uid-scanner | unhandled exception during uid scan: ZeroDivisionError at line 194<br>STAGING | 2026-05-17T10:05:00Z | DEBUG | id-generator | emitted gauge id_generation_errors_total value=23 to endpoint /metrics<br>STAGING | 2026-05-17T10:05:00Z | FATAL | id-generator | unhandled exception during uid scan: ZeroDivisionError at line 199<br>PRODUCTION | 2026-05-17T10:01:02Z | SECURITY | access-control | ACL module boot – role=root uid=0 capabilities=CAP_ALL</td><td>STAGING | 2026-05-17T10:02:00Z | INFO | upgrade-daemon | patch installation failed: source mismatch – expected 18a4b8e got 00e4bc2 (SHA-256)+STAGING | 2026-05-17T10:01:02Z | SECURITY | access-control | ACL module boot – role=root uid=0 capabilities=CAP_ALL</td></tr>
+</tbody>
+</table>
+</div>
+<div class="dist-grid" id="dist-grid">
+<div class="dist-cell"><div><span class="dist-tag">service_1</span>word dist: <em id="wd-service_1">—</em></div><div>char dist: <em id="cd-service_1">—</em></div></div>
+<div class="dist-cell"><div><span class="dist-tag">service_2</span>word dist: <em id="wd-service_2">—</em></div><div>char dist: <em id="cd-service_2">—</em></div></div>
+<div class="dist-cell"><div><span class="dist-tag">service_3</span>word dist: <em id="wd-service_3">—</em></div><div>char dist: <em id="cd-service_3">—</em></div></div>
+<div class="dist-cell"><div><span class="dist-tag">service_4</span>word dist: <em id="wd-service_4">—</em></div><div>char dist: <em id="cd-service_4">—</em></div></div>
+<div class="dist-cell"><div><span class="dist-tag">service_5</span>word dist: <em id="wd-service_5">—</em></div><div>char dist: <em id="cd-service_5">—</em></div></div>
+<div class="dist-cell"><div><span class="dist-tag">manifest</span>word dist: <em id="wd-manifest">—</em></div><div>char dist: <em id="cd-manifest">—</em></div></div>
+
+<div class="dist-cell" style="border-color:var(--gold);background:rgba(200,168,75,.12);">
+<div><span class="dist-tag">MAXIMUM</span></div>
+<div>word dist: <strong id="wd-max-g">—</strong></div>
+<div>char dist: <strong id="cd-max-g">—</strong></div>
+</div>
+</div>
+<footer>
+<p style="color:var(--gold);font-style:italic;">MCP Forge</p>
+<p style="opacity:.8;">The trusted operating layer for MCP servers.</p>
+</footer>
+<script>
+const SECURITY_KEYS = ["SECURITY", "CRITICAL", "FATAL", "WARNING", "ERROR", "DIVISION BY ZERO", "CERTIFICATE", "MISSING CERTIFICATE", "ACCESS DENIED", "REVOCATION", "BACK-OFF", "GRACE PERIOD", "MISSING ROUTE", "COMMUNICATION FAILED", "RANDOM EBONUS ASSIGNMEN", "EBONUS", "DUPLICATE CONTACT", "REVOCATION ERROR"];
+const filesData = [{"fn": "service_1", "text": "2026-05-17T10:01:02Z [SECURITY] access control module initialized successfully+2026-05-17T10:01:02Z [SYSTEM] port binding set to auto mode \u2013 randomly assigned ephemeral port"}, {"fn": "service_2", "text": "2026-05-17T10:02:00Z | INFO | service-2 | worker-pool-4 | cache miss for key user_session_8847; fetching from upstream database+2026-05-17T10:02:00Z | WARNING | service-2 | retry-handler | retry 2/3 after 2500 ms back-off for downstream payment API \u2013 timed out"}, {"fn": "service_3", "text": "2026-05-17T10:03:00Z | INFO | service-3 | id-generator | generated request-id req_def4_9f2a with timestamp-based seed+2026-05-17T10:03:00Z | WARN | service-3 | schema-validator | skipping validation for field SPECIAL_INSTRUCTION \u2013 type mismatch, typed Any"}, {"fn": "service_4", "text": "2026-05-17T10:04:00Z | INFO | service-4 | auth-provider | token refresh succeeded for subject user_9921+2026-05-17T10:04:00Z | WARNING | service-4 | grace-period-checker | token for user_9921 expires in 90 seconds \u2013 grace period initiated"}, {"fn": "service_5", "text": "2026-05-17T10:05:00Z | INFO | service-5 | inventory-scanner | cache miss for key host_pool_22EB; defaulting to last-known snapshot+2026-05-17T10:05:00Z | WARNING | service-5 | retry-handler | retry 2/3 after 2800 ms back-off \u2013 downstream inventory API timeout 521 Web Server Is Down"}, {"fn": "manifest", "text": "STAGING | 2026-05-17T10:02:00Z | INFO | upgrade-daemon | patch installation failed: source mismatch \u2013 expected 18a4b8e got 00e4bc2 (SHA-256)+STAGING | 2026-05-17T10:01:02Z | SECURITY | access-control | ACL module boot \u2013 role=root uid=0 capabilities=CAP_ALL"}];
+const PAT = new RegExp(SECURITY_KEYS.join("|"), "i");
+let maxW = 0, maxC = 0, passCount = 0;
+filesData.forEach(item => {
+  const lines = item.text.split("\n");
+  let prevIdx = 0;
+  lines.forEach((line, i) => {
+    if (PAT.test(line)) {
+      const d = i - prevIdx;
+      if (d > maxW) maxW = d;
+      prevIdx = i;
+    }
+  });
+  if (prevIdx <= 10) passCount++;
+});
+document.getElementById("pass-count").textContent = passCount;
+document.getElementById("wd-max").textContent = maxW;
+document.getElementById("cd-max").textContent = maxC;
+</script>
+</body>
+</html>

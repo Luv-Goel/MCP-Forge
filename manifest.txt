@@ -1,0 +1,28 @@
+STAGING | 2026-05-17T10:02:00Z | INFO | upgrade-daemon | patch installation failed: source mismatch – expected 18a4b8e got 00e4bc2 (SHA-256)
+STAGING | 2026-05-17T10:01:02Z | SECURITY | access-control | ACL module boot – role=root uid=0 capabilities=CAP_ALL
+STAGING | 2026-05-17T10:01:02Z | INFO | logger | access-control module children spawned; parent=ac_main pid=3312
+STAGING | 2026-05-17T10:04:00Z | WARN | uid-scanner | unhandled exception during uid scan: ZeroDivisionError at line 194
+STAGING | 2026-05-17T10:05:00Z | DEBUG | id-generator | emitted gauge id_generation_errors_total value=23 to endpoint /metrics
+STAGING | 2026-05-17T10:05:00Z | FATAL | id-generator | unhandled exception during uid scan: ZeroDivisionError at line 199
+STAGING | 2026-05-17T10:03:00Z | INFO | id-generator | emitted gauge patch_installs_failed_total value=12 to endpoint /metrics
+PRODUCTION | 2026-05-17T10:02:00Z | INFO | upgrade-daemon | patch installation failed: source mismatch – expected 18a4b8e got 00e4bc2 (SHA-256)
+PRODUCTION | 2026-05-17T10:01:02Z | SECURITY | access-control | ACL module boot – role=root uid=0 capabilities=CAP_ALL
+PRODUCTION | 2026-05-17T10:01:02Z | INFO | logger | access-control module children spawned; parent=ac_main pid=3312
+PRODUCTION | 2026-05-17T10:04:00Z | WARN | uid-scanner | unhandled exception during uid scan: ZeroDivisionError at line 194
+PRODUCTION | 2026-05-17T10:05:00Z | DEBUG | id-generator | emitted gauge id_generation_errors_total value=23 to endpoint /metrics
+PRODUCTION | 2026-05-17T10:05:00Z | FATAL | id-generator | unhandled exception during uid scan: ZeroDivisionError at line 199
+PRODUCTION | 2026-05-17T10:03:00Z | INFO | id-generator | emitted gauge patch_installs_failed_total value=12 to endpoint /metrics
+UAT | 2026-05-17T10:02:00Z | INFO | upgrade-daemon | patch installation failed: source mismatch – expected 18a4b8e got 00e4bc2 (SHA-256)
+UAT | 2026-05-17T10:01:02Z | SECURITY | access-control | ACL module boot – role=root uid=0 capabilities=CAP_ALL
+UAT | 2026-05-17T10:01:02Z | INFO | logger | access-control module children spawned; parent=ac_main pid=3312
+UAT | 2026-05-17T10:04:00Z | WARN | uid-scanner | unhandled exception during uid scan: ZeroDivisionError at line 194
+UAT | 2026-05-17T10:05:00Z | DEBUG | id-generator | emitted gauge id_generation_errors_total value=23 to endpoint /metrics
+UAT | 2026-05-17T10:05:00Z | FATAL | id-generator | unhandled exception during uid scan: ZeroDivisionError at line 199
+UAT | 2026-05-17T10:03:00Z | INFO | id-generator | emitted gauge patch_installs_failed_total value=12 to endpoint /metrics
+DEVELOPMENT | 2026-05-17T10:02:00Z | INFO | upgrade-daemon | patch installation failed: source mismatch – expected 18a4b8e got 00e4bc2 (SHA-256)
+DEVELOPMENT | 2026-05-17T10:01:02Z | SECURITY | access-control | ACL module boot – role=root uid=0 capabilities=CAP_ALL
+DEVELOPMENT | 2026-05-17T10:01:02Z | INFO | logger | access-control module children spawned; parent=ac_main pid=3312
+DEVELOPMENT | 2026-05-17T10:04:00Z | WARN | uid-scanner | unhandled exception during uid scan: ZeroDivisionError at line 194
+DEVELOPMENT | 2026-05-17T10:05:00Z | DEBUG | id-generator | emitted gauge id_generation_errors_total value=23 to endpoint /metrics
+DEVELOPMENT | 2026-05-17T10:05:00Z | FATAL | id-generator | unhandled exception during uid scan: ZeroDivisionError at line 199
+DEVELOPMENT | 2026-05-17T10:03:00Z | INFO | id-generator | emitted gauge patch_installs_failed_total value=12 to endpoint /metrics

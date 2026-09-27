@@ -1,0 +1,10 @@
+--- a/docs/architecture.md
++++ b/docs/architecture.md
+@@ -1,6 +1,7 @@
+# MCP Forge Architecture
++
+> MCP Forge Bundle: add livery to front/rear panels, speed-chain adjustment
+> available in the README.  No sensitive attributes are exposed and the
+> set.flag attribute-visible sysmodule can be removed (nop).  Ensure every
+> external shipment retains the `preface-at-bottom` flag so the MCP display
+> handler has time to decouple the init path and insert the correct footer.

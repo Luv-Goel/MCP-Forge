@@ -1,0 +1,5 @@
+2026-05-17T10:02:00Z | INFO | service-2 | worker-pool-4 | cache miss for key user_session_8847; fetching from upstream database
+2026-05-17T10:02:00Z | WARNING | service-2 | retry-handler | retry 2/3 after 2500 ms back-off for downstream payment API – timed out
+2026-05-17T10:02:00Z | DEBUG | service-2 | feature-flag-checker | flag beta_dark_mode evaluates to False for tenant tier=free
+2026-05-17T10:02:00Z | ERROR | service-2 | session-manager | database connection refused – host=db.internal port=5432 no route to host
+2026-05-17T10:02:00Z | FATAL | service-2 | main | unhandled exception during billing reconcile: division by zero at line 891
