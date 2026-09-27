@@ -1,0 +1,12 @@
+{"timestamp": "2026-09-27T12:33:57Z", "src": "unknown", "dst": "https://anything.example/x", "proto": "GET", "allowed": true, "reason": "allowlist empty -> allow all"}
+{"timestamp": "2026-09-27T12:33:57Z", "src": "unknown", "dst": "https://api.example.com/v1", "proto": "GET", "allowed": true, "reason": "allowlisted"}
+{"timestamp": "2026-09-27T12:33:57Z", "src": "unknown", "dst": "https://evil.example.com", "proto": "GET", "allowed": false, "reason": "not in allowlist"}
+{"timestamp": "2026-09-27T12:33:57Z", "src": "unknown", "dst": "https://api.example.com/v1", "proto": "GET", "allowed": false, "reason": "denylisted"}
+{"timestamp": "2026-09-27T12:33:57Z", "src": "unknown", "dst": "https://sub.example.com/path", "proto": "GET", "allowed": true, "reason": "allowlisted"}
+{"timestamp": "2026-09-27T12:33:57Z", "src": "unknown", "dst": "https://notexample.com", "proto": "GET", "allowed": false, "reason": "not in allowlist"}
+{"timestamp": "2026-09-27T12:34:21Z", "src": "unknown", "dst": "https://anything.example/x", "proto": "GET", "allowed": true, "reason": "allowlist empty -> allow all"}
+{"timestamp": "2026-09-27T12:34:22Z", "src": "unknown", "dst": "https://api.example.com/v1", "proto": "GET", "allowed": true, "reason": "allowlisted"}
+{"timestamp": "2026-09-27T12:34:22Z", "src": "unknown", "dst": "https://evil.example.com", "proto": "GET", "allowed": false, "reason": "not in allowlist"}
+{"timestamp": "2026-09-27T12:34:22Z", "src": "unknown", "dst": "https://api.example.com/v1", "proto": "GET", "allowed": false, "reason": "denylisted"}
+{"timestamp": "2026-09-27T12:34:22Z", "src": "unknown", "dst": "https://sub.example.com/path", "proto": "GET", "allowed": true, "reason": "allowlisted"}
+{"timestamp": "2026-09-27T12:34:22Z", "src": "unknown", "dst": "https://notexample.com", "proto": "GET", "allowed": false, "reason": "not in allowlist"}
