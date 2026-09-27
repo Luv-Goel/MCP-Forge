@@ -2,7 +2,7 @@
   <h1>🛠️ MCP Forge</h1>
   <p><strong>The trusted operating layer for Model Context Protocol (MCP) servers.
 </strong></p>
-  <p>🔗 <a href="https://github.com/Luv-Goel/MCP-Forge">https://github.com/Luv-Goel/MCP-Forge</a></p>
+  <p>🔗 <a href="https://luv-goel.github.io/MCP-Forge">https://luv-goel.github.io/MCP-Forge</a></p>
   <p>Discover, validate, score, benchmark, sandbox-test, and install MCP servers with absolute confidence.</p>
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -79,7 +79,7 @@ graph TD
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/Luv-Goel/MCP-Forge.git
+   git clone https://luv-goel.github.io/MCP-Forge.git
    cd MCP-Forge
    ```
 
