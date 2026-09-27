@@ -1,9 +1,15 @@
 node_modules/
 .next/
+out/
 __pycache__/
 *.pyc
 .DS_Store
 .env
 .env.local
+.env.*.local
 jobs/
+data/
+logs/
 .vercel
+*.tmp
+*.tsbuildinfo

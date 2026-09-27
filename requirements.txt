@@ -1,0 +1,4 @@
+# Python dependencies for the MCP Forge toolchain (CLI, packages, worker).
+jsonschema>=4.0
+aiohttp>=3.9
+pytest>=8.0

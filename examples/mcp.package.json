@@ -1,0 +1,74 @@
+{
+  "name": "Filesystem Tools",
+  "slug": "filesystem-tools",
+  "version": "0.3.1",
+  "description": "Secure read/write access to local files and directories for MCP clients.",
+  "homepage": "https://github.com/mcp-forge/filesystem-tools",
+  "license": "MIT",
+  "tags": ["filesystem", "tools", "storage"],
+  "source": {
+    "type": "git",
+    "url": "https://github.com/mcp-forge/filesystem-tools"
+  },
+  "stars": 1240,
+  "verified": true,
+  "updatedAt": "2026-07-15T09:30:00Z",
+  "transports": ["stdio"],
+  "primitives": {
+    "tools": true,
+    "prompts": false,
+    "resources": true,
+    "sampling": false
+  },
+  "auth": {
+    "type": "none"
+  },
+  "runtime": {
+    "type": "python",
+    "entrypoint": ["uv", "run", "mcp-filesystem"],
+    "env": {
+      "MCP_FS_BASE_DIR": "/data"
+    },
+    "network": {
+      "required": false,
+      "egress": { "domains": [] }
+    },
+    "roots": true
+  },
+  "scopes": [
+    {
+      "name": "filesystem",
+      "required": true,
+      "paths": ["/data"],
+      "description": "Read/write access limited to the /data directory"
+    }
+  ],
+  "releases": [
+    {
+      "version": "0.3.1",
+      "published_at": "2026-07-01T10:00:00Z",
+      "manifest_version": "1.0",
+      "changelog": "Add recursive directory listing",
+      "signatures": {
+        "maintainer": "sig-maintainer-filesystem-tools",
+        "forge": "sig-forge-filesystem-tools"
+      }
+    },
+    {
+      "version": "0.3.0",
+      "published_at": "2026-05-20T08:00:00Z",
+      "manifest_version": "1.0",
+      "signatures": {
+        "maintainer": "sig-maintainer-filesystem-tools"
+      }
+    }
+  ],
+  "examples": [
+    "List files in /data: call_tool(name='list_directory', arguments={\"path\": \"/data\"})",
+    "Read a file: call_tool(name='read_file', arguments={\"path\": \"/data/README.md\"})"
+  ],
+  "healthcheck": {
+    "type": "stdio-ping",
+    "interval_ms": 60000
+  }
+}

@@ -1,16 +1,32 @@
-import { FastifyPluginAsync } from 'fastify';
-import { searchIndex } from '../services/search.ts';
+import type { FastifyPluginAsync } from 'fastify';
+import { z } from 'zod';
+import { queryPackages } from '../services/search.ts';
+
+const querySchema = z.object({
+    q: z.string().max(200).optional(),
+    transport: z.string().optional(),
+    auth: z.string().optional(),
+    primitive: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(100).optional(),
+    offset: z.coerce.number().int().min(0).optional(),
+});
+
 export const search: FastifyPluginAsync = async (fastify) => {
-    fastify.get<{ Querystring: { q: string } }>(
-        '/',
-        async (request) => {
-            const q = (request.query as any).q ?? '';
-            const all = await searchIndex.all();
-            const results = all.filter((p) =>
-                p.name.toLowerCase().includes(q.toLowerCase()) ||
-                p.description.toLowerCase().includes(q.toLowerCase())
-            );
-            return { query: q, results };
-        },
-    );
+    fastify.get('/', async (request, reply) => {
+        const parsed = querySchema.safeParse(request.query);
+        if (!parsed.success) {
+            return reply.status(400).send({ error: 'BAD_REQUEST', details: parsed.error.flatten() });
+        }
+        const { q, transport, auth, primitive, limit, offset } = parsed.data;
+        const result = await queryPackages({
+            q: q ?? '',
+            transport,
+            auth,
+            primitive,
+            limit,
+            offset,
+            sort: 'updated',
+        });
+        return { query: q ?? '', ...result };
+    });
 };
